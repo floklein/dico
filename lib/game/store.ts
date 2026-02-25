@@ -108,8 +108,24 @@ export class RoomManager {
     }
 
     let count = 0;
-    for (const definition of room.round.definitionsByPlayerId.values()) {
-      if (definition.rawDefinition?.trim()) {
+    for (const playerId of room.players.keys()) {
+      const definition = room.round.definitionsByPlayerId.get(playerId);
+      if (definition?.rawDefinition?.trim()) {
+        count += 1;
+      }
+    }
+
+    return count;
+  }
+
+  private getVotedCount(room: InternalRoom): number {
+    if (!room.round) {
+      return 0;
+    }
+
+    let count = 0;
+    for (const playerId of room.players.keys()) {
+      if (room.round.votesByPlayerId.has(playerId)) {
         count += 1;
       }
     }
@@ -150,7 +166,7 @@ export class RoomManager {
             phaseStartedAt: round.phaseStartedAt,
             phaseEndsAt: round.phaseEndsAt,
             submittedCount: this.getSubmittedCount(room),
-            votedCount: round.votesByPlayerId.size,
+            votedCount: this.getVotedCount(room),
             hasSubmitted: viewerPlayerId
               ? Boolean(round.definitionsByPlayerId.get(viewerPlayerId)?.rawDefinition?.trim())
               : false,
@@ -339,11 +355,22 @@ export class RoomManager {
     }
   }
 
+  private cleanupRoundStateForPlayer(room: InternalRoom, playerId: string): void {
+    if (!room.round) {
+      return;
+    }
+
+    room.round.definitionsByPlayerId.delete(playerId);
+    room.round.votesByPlayerId.delete(playerId);
+    room.round.roundScoreDeltaByPlayerId.delete(playerId);
+  }
+
   leaveRoom(codeInput: string, session: SessionPayload): RoomState | null {
     const room = this.getRoomOrThrow(codeInput);
     this.validateSession(codeInput, session);
 
     room.players.delete(session.playerId);
+    this.cleanupRoundStateForPlayer(room, session.playerId);
     this.ensureHost(room);
 
     if (room.players.size < room.settings.minPlayers && room.phase !== "LOBBY") {
@@ -352,6 +379,20 @@ export class RoomManager {
       if (room.round) {
         room.round.phaseEndsAt = null;
         room.round.phaseStartedAt = now();
+      }
+    } else if (room.phase === "WRITING" && room.round) {
+      const allSubmitted = [...room.players.keys()].every((playerId) =>
+        Boolean(room.round?.definitionsByPlayerId.get(playerId)?.rawDefinition?.trim()),
+      );
+      if (allSubmitted) {
+        void this.finalizeWriting(room.code, room.round.roundNumber);
+      }
+    } else if (room.phase === "VOTING" && room.round) {
+      const allVoted = [...room.players.keys()].every((playerId) =>
+        Boolean(room.round?.votesByPlayerId.has(playerId)),
+      );
+      if (allVoted) {
+        this.finalizeVoting(room.code, room.round.roundNumber);
       }
     }
 

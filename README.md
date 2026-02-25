@@ -39,6 +39,8 @@ App disponible sur `http://localhost:3000`.
 ## Scripts
 
 - `npm run dev` lance le serveur de dev
+- `npm test` lance les tests Vitest (mode CI)
+- `npm run test:watch` lance les tests Vitest en mode watch
 - `npm run lint` lance ESLint
 - `npm run build` build production
 - `npm run start` lance le build en mode prod
