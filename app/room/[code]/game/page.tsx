@@ -113,6 +113,19 @@ export default function GamePage() {
     [snapshot?.players],
   );
 
+  const isLastRoundResults = Boolean(
+    snapshot?.phase === "ROUND_RESULTS" &&
+      snapshot.round &&
+      snapshot.round.roundNumber >= snapshot.settings.totalRounds,
+  );
+
+  const currentPlayerDefinitionOptionId = useMemo(() => {
+    if (!snapshot?.round || !session?.playerId) {
+      return null;
+    }
+    return `player-${snapshot.round.roundNumber}-${session.playerId}`;
+  }, [session?.playerId, snapshot?.round]);
+
   useEffect(() => {
     if (snapshot?.phase === "WRITING") {
       setDefinitionInput("");
@@ -309,16 +322,31 @@ export default function GamePage() {
             <p className="text-sm font-semibold text-zinc-700">Révélation des définitions</p>
             <div className="space-y-2">
               {(snapshot.round?.options ?? []).map((option) => (
-                <div
-                  key={option.id}
-                  className={`rounded-xl px-3 py-2 text-sm ${
-                    option.id === snapshot.round?.correctOptionId
-                      ? "bg-emerald-100 text-emerald-900"
-                      : "bg-white"
-                  }`}
-                >
-                  {option.text}
-                </div>
+                (() => {
+                  const isCorrect = option.id === snapshot.round?.correctOptionId;
+                  const isCurrentPlayerDefinition =
+                    option.id === currentPlayerDefinitionOptionId;
+
+                  const optionClassName = isCorrect
+                    ? "bg-emerald-100 text-emerald-900"
+                    : isCurrentPlayerDefinition
+                      ? "bg-red-100 text-red-900"
+                      : "bg-white";
+
+                  return (
+                    <div
+                      key={option.id}
+                      className={`rounded-xl px-3 py-2 text-sm ${optionClassName}`}
+                    >
+                      {option.text}
+                      {isCurrentPlayerDefinition ? (
+                        <span className="ml-2 text-xs font-bold uppercase tracking-[0.12em]">
+                          {isCorrect ? "votre réponse (juste)" : "votre réponse"}
+                        </span>
+                      ) : null}
+                    </div>
+                  );
+                })()
               ))}
             </div>
 
@@ -359,11 +387,17 @@ export default function GamePage() {
                 disabled={pendingAction !== null}
                 className="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {pendingAction === "next" ? "Chargement..." : "Manche suivante"}
+                {pendingAction === "next"
+                  ? "Chargement..."
+                  : isLastRoundResults
+                    ? "Résultats finaux"
+                    : "Manche suivante"}
               </button>
             ) : (
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
-                En attente de l&apos;hôte pour la manche suivante
+                {isLastRoundResults
+                  ? "En attente de l&apos;hôte pour afficher les résultats finaux"
+                  : "En attente de l&apos;hôte pour la manche suivante"}
               </p>
             )}
           </section>
