@@ -724,9 +724,8 @@ export class RoomManager {
 
       round.roundScoreDeltaByPlayerId = scoreDeltas;
 
-      const isFinalRound = round.roundNumber >= room.settings.totalRounds;
       const notEnoughPlayers = room.players.size < room.settings.minPlayers;
-      room.phase = isFinalRound || notEnoughPlayers ? "FINAL_RESULTS" : "ROUND_RESULTS";
+      room.phase = notEnoughPlayers ? "FINAL_RESULTS" : "ROUND_RESULTS";
       round.phaseStartedAt = now();
       round.phaseEndsAt = null;
 
@@ -748,6 +747,17 @@ export class RoomManager {
 
     if (room.players.size < room.settings.minPlayers) {
       room.phase = "FINAL_RESULTS";
+      this.touchRoom(room);
+      this.broadcast(room.code);
+      return this.getSnapshot(room.code, session.playerId);
+    }
+
+    if (room.round && room.round.roundNumber >= room.settings.totalRounds) {
+      room.phase = "FINAL_RESULTS";
+      if (room.round) {
+        room.round.phaseStartedAt = now();
+        room.round.phaseEndsAt = null;
+      }
       this.touchRoom(room);
       this.broadcast(room.code);
       return this.getSnapshot(room.code, session.playerId);

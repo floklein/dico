@@ -172,3 +172,47 @@ describe("RoomManager AI error state", () => {
     expect(snapshot.errorMessage).toContain("normalization failed");
   });
 });
+
+describe("RoomManager final round flow", () => {
+  it("keeps last round in ROUND_RESULTS before transitioning to FINAL_RESULTS on nextRound", async () => {
+    const manager = new RoomManager();
+    const created = manager.createRoom("Host");
+    const roomCode = created.roomCode;
+    const hostSession = created.session;
+    const aliceSession = manager.joinRoom(roomCode, "Alice").session;
+
+    await manager.startGame(roomCode, hostSession);
+
+    for (let roundIndex = 1; roundIndex <= 5; roundIndex += 1) {
+      await manager.submitDefinition(roomCode, hostSession, `Host def ${roundIndex}`);
+      const votingSnapshot = await manager.submitDefinition(
+        roomCode,
+        aliceSession,
+        `Alice def ${roundIndex}`,
+      );
+
+      expect(votingSnapshot.phase).toBe("VOTING");
+      const optionId = votingSnapshot.round?.options[0]?.id as string;
+
+      manager.vote(roomCode, hostSession, optionId);
+      const roundResultsSnapshot = manager.vote(roomCode, aliceSession, optionId);
+
+      expect(roundResultsSnapshot.phase).toBe("ROUND_RESULTS");
+      expect(roundResultsSnapshot.round?.roundNumber).toBe(roundIndex);
+
+      if (roundIndex < 5) {
+        const nextSnapshot = await manager.nextRound(roomCode, hostSession);
+        expect(nextSnapshot.phase).toBe("WRITING");
+        expect(nextSnapshot.round?.roundNumber).toBe(roundIndex + 1);
+      }
+    }
+
+    const beforeFinal = manager.getSnapshot(roomCode, hostSession.playerId);
+    expect(beforeFinal.phase).toBe("ROUND_RESULTS");
+    expect(beforeFinal.round?.roundNumber).toBe(5);
+
+    const finalSnapshot = await manager.nextRound(roomCode, hostSession);
+    expect(finalSnapshot.phase).toBe("FINAL_RESULTS");
+    expect(finalSnapshot.round?.roundNumber).toBe(5);
+  });
+});
