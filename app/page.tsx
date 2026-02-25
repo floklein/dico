@@ -26,14 +26,14 @@ interface JoinRoomResponse {
 
 function phasePath(code: string, phase: RoomState["phase"]): string {
   if (phase === "LOBBY") {
-    return `/salle/${code}/lobby`;
+    return `/room/${code}/lobby`;
   }
 
   if (phase === "FINAL_RESULTS") {
-    return `/salle/${code}/resultats`;
+    return `/room/${code}/results`;
   }
 
-  return `/salle/${code}/jeu`;
+  return `/room/${code}/game`;
 }
 
 export default function HomePage() {
@@ -48,12 +48,12 @@ export default function HomePage() {
     [roomCode],
   );
 
-  const hasPseudo = playerName.trim().length > 0;
+  const hasUsername = playerName.trim().length > 0;
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
 
-    if (!hasPseudo) {
+    if (!hasUsername) {
       setError("Commencez par choisir un pseudo.");
       return;
     }
@@ -83,7 +83,7 @@ export default function HomePage() {
   async function handleJoin(event: FormEvent) {
     event.preventDefault();
 
-    if (!hasPseudo) {
+    if (!hasUsername) {
       setError("Commencez par choisir un pseudo.");
       return;
     }
@@ -148,7 +148,7 @@ export default function HomePage() {
           <form onSubmit={handleCreate}>
             <button
               type="submit"
-              disabled={pendingAction !== null || !hasPseudo}
+              disabled={pendingAction !== null || !hasUsername}
               className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction === "create" ? "Création..." : "Créer un salon"}
@@ -177,7 +177,7 @@ export default function HomePage() {
 
             <button
               type="submit"
-              disabled={pendingAction !== null || !hasPseudo}
+              disabled={pendingAction !== null || !hasUsername}
               className="w-full rounded-xl bg-orange-100 px-4 py-3 text-base font-semibold text-orange-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction === "join" ? "Connexion..." : "Rejoindre le salon"}

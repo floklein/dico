@@ -14,12 +14,12 @@ import type { RoomState } from "@/lib/game/types";
 
 function routeForPhase(code: string, phase: RoomState["phase"]): string {
   if (phase === "LOBBY") {
-    return `/salle/${code}/lobby`;
+    return `/room/${code}/lobby`;
   }
   if (phase === "FINAL_RESULTS") {
-    return `/salle/${code}/resultats`;
+    return `/room/${code}/results`;
   }
-  return `/salle/${code}/jeu`;
+  return `/room/${code}/game`;
 }
 
 export default function ResultsPage() {
