@@ -3,7 +3,8 @@ export type GamePhase =
   | "WRITING"
   | "VOTING"
   | "ROUND_RESULTS"
-  | "FINAL_RESULTS";
+  | "FINAL_RESULTS"
+  | "ERROR";
 
 export interface GameSettings {
   totalRounds: number;
@@ -46,6 +47,7 @@ export interface RoundState {
 export interface RoomState {
   code: string;
   phase: GamePhase;
+  errorMessage: string | null;
   hostId: string;
   players: PlayerState[];
   settings: GameSettings;
@@ -112,6 +114,7 @@ export interface InternalRoom {
   hostId: string;
   players: Map<string, InternalPlayer>;
   phase: GamePhase;
+  errorMessage: string | null;
   settings: GameSettings;
   round: InternalRoundState | null;
   roundTimeout: NodeJS.Timeout | null;
