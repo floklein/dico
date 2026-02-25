@@ -7,7 +7,7 @@ MVP mobile-first multijoueur en francais avec Next.js (App Router), SSE + HTTP, 
 - Next.js 16 + React 19
 - Etat de partie en RAM (processus Node unique)
 - Temps reel via SSE (`/api/rooms/[code]/events`)
-- IA via Vercel AI Gateway (modele par defaut: `google/gemini-3-flash`)
+- IA via Vercel AI Gateway (modele par defaut: `openai/gpt-5.2`)
 
 ## Setup local
 
@@ -26,7 +26,7 @@ cp .env.example .env.local
 Puis renseigner au minimum:
 
 - `VERCEL_AI_GATEWAY_API_KEY`
-- `LLM_MODEL` (optionnel, defaut `google/gemini-3-flash`)
+- `LLM_MODEL` (optionnel, defaut `openai/gpt-5.2`)
 
 3. Lancer l'app:
 
