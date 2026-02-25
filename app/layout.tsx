@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
+const siteUrl = "https://dico.florentklein.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
