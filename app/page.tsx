@@ -119,51 +119,51 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-8 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-8 text-foreground">
       <div className="mx-auto w-full max-w-md space-y-4">
-        <header className="rounded-2xl bg-white/65 px-4 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
+        <header className="rounded-2xl bg-game-surface px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-game-accent-soft-foreground">
             Le jeu du Dico
           </p>
-          <h1 className="mt-1 text-2xl font-black text-orange-900">Bluffe sur des définitions</h1>
-          <p className="mt-1 text-sm text-zinc-700">
+          <h1 className="mt-1 text-2xl font-black text-primary">Bluffe sur des définitions</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Écris une définition plausible, vote pour la vraie, marque des points
           </p>
         </header>
 
-        <section className="rounded-2xl bg-white/80 px-4 py-4">
-          <label className="block space-y-2 text-sm font-semibold text-zinc-700">
+        <section className="rounded-2xl bg-game-surface-strong px-4 py-4">
+          <label className="block space-y-2 text-sm font-semibold text-muted-foreground">
             Pseudo
             <input
               value={playerName}
               onChange={(event) => setPlayerName(event.target.value)}
               placeholder="Ex: Camille"
               maxLength={32}
-              className="w-full rounded-xl border border-amber-300 bg-white px-4 py-3 text-base outline-none ring-orange-400 transition focus:ring-2"
+              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base text-foreground outline-none ring-ring transition focus:ring-2"
             />
           </label>
         </section>
 
-        <section className="space-y-3 rounded-2xl bg-white/80 px-4 py-4">
+        <section className="space-y-3 rounded-2xl bg-game-surface-strong px-4 py-4">
           <form onSubmit={handleCreate}>
             <button
               type="submit"
               disabled={pendingAction !== null || !hasUsername}
-              className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-xl bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction === "create" ? "Création..." : "Créer un salon"}
             </button>
           </form>
 
           <div className="relative py-1">
-            <div className="h-px w-full bg-amber-300/80" />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+            <div className="h-px w-full bg-border" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs font-semibold uppercase tracking-[0.12em] text-game-accent-soft-foreground">
               ou
             </span>
           </div>
 
           <form className="space-y-3" onSubmit={handleJoin}>
-            <label className="block space-y-2 text-sm font-semibold text-zinc-700">
+            <label className="block space-y-2 text-sm font-semibold text-muted-foreground">
               Code
               <input
                 value={normalizedRoomCode}
@@ -171,14 +171,14 @@ export default function HomePage() {
                 placeholder="ABCD"
                 maxLength={4}
                 autoCapitalize="characters"
-                className="w-full rounded-xl border border-amber-300 bg-white px-4 py-3 text-base uppercase tracking-[0.2em] outline-none ring-orange-400 transition focus:ring-2"
+                className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base uppercase tracking-[0.2em] text-foreground outline-none ring-ring transition focus:ring-2"
               />
             </label>
 
             <button
               type="submit"
               disabled={pendingAction !== null || !hasUsername}
-              className="w-full rounded-xl bg-orange-100 px-4 py-3 text-base font-semibold text-orange-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-xl bg-secondary px-4 py-3 text-base font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction === "join" ? "Connexion..." : "Rejoindre le salon"}
             </button>
@@ -186,7 +186,7 @@ export default function HomePage() {
         </section>
 
         {error ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
             {error}
           </p>
         ) : null}

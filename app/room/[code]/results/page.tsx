@@ -142,14 +142,14 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-6 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-6 text-foreground">
       <div className="mx-auto w-full max-w-md space-y-4">
-        <header className="rounded-2xl bg-white/75 px-4 py-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
+        <header className="rounded-2xl bg-game-surface px-4 py-4 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-game-accent-soft-foreground">
             Partie terminée
           </p>
-          <h1 className="mt-1 text-3xl font-black text-orange-900">Résultats finaux</h1>
-          <p className="mt-1 text-sm text-zinc-700">
+          <h1 className="mt-1 text-3xl font-black text-primary">Résultats finaux</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             {winners.length > 1
               ? `Égalité: ${winners.map((player) => player.name).join(", ")}`
               : `Vainqueur: ${winners[0]?.name ?? "-"}`}
@@ -161,20 +161,20 @@ export default function ResultsPage() {
             const isCurrentPlayer = player.id === session?.playerId;
 
             return (
-                <li
+              <li
                   key={player.id}
                   className={`flex items-center justify-between rounded-xl px-4 py-3 ${
                     isCurrentPlayer
-                    ? "bg-orange-100"
-                    : "bg-white/85"
+                    ? "bg-game-accent-soft"
+                    : "bg-game-surface-strong"
                 }`}
               >
-                <span className="text-sm font-semibold text-zinc-800">
+                <span className="text-sm font-semibold text-foreground">
                   #{index + 1} {player.name}
                   {isCurrentPlayer ? " (vous)" : ""}
                   {player.isHost ? " · hôte" : ""}
                 </span>
-                <span className="text-sm font-black text-orange-700">{player.score} pts</span>
+                <span className="text-sm font-black text-primary">{player.score} pts</span>
               </li>
             );
           })}
@@ -185,7 +185,7 @@ export default function ResultsPage() {
             type="button"
             onClick={handleReplay}
             disabled={!me?.isHost || pendingAction !== null}
-            className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "replay" ? "Relance..." : "Rejouer"}
           </button>
@@ -193,14 +193,14 @@ export default function ResultsPage() {
             type="button"
             onClick={handleLeave}
             disabled={pendingAction !== null}
-            className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-secondary px-4 py-3 text-base font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Quitter
           </button>
         </div>
 
         {error || streamError ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
             {error ?? streamError}
           </p>
         ) : null}

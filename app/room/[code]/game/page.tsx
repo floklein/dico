@@ -228,36 +228,36 @@ export default function GamePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-5 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-5 text-foreground">
       <div className="mx-auto w-full max-w-xl space-y-3">
-        <header className="flex items-center justify-between gap-3 rounded-2xl bg-white/80 px-4 py-3">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-800">
+        <header className="flex items-center justify-between gap-3 rounded-2xl bg-game-surface-strong px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-game-accent-soft-foreground">
             Manche {snapshot?.round?.roundNumber ?? "..."}/{snapshot?.settings.totalRounds ?? 5} · Salon {roomCode}
           </p>
-          <div className="rounded-full bg-orange-100 px-3 py-1 text-sm font-black text-orange-800">
+          <div className="rounded-full bg-game-accent-soft px-3 py-1 text-sm font-black text-game-accent-soft-foreground">
             {secondsLeft ?? "--"}s
           </div>
         </header>
 
         {snapshot?.round?.word ? (
-          <section className="rounded-2xl bg-white/80 px-4 py-4 text-center">
-            <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Mot</p>
-            <p className="mt-1 text-3xl font-black text-orange-900">{snapshot.round.word}</p>
+          <section className="rounded-2xl bg-game-surface px-4 py-4 text-center">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Mot</p>
+            <p className="mt-1 text-3xl font-black text-primary">{snapshot.round.word}</p>
           </section>
         ) : null}
 
         {snapshot?.phase === "ERROR" ? (
-          <section className="space-y-2 rounded-2xl bg-red-50 px-4 py-4">
-            <p className="text-sm font-semibold text-red-800">Erreur IA</p>
-            <p className="text-sm text-red-700">
+          <section className="space-y-2 rounded-2xl bg-game-danger-soft px-4 py-4">
+            <p className="text-sm font-semibold text-game-danger-soft-foreground">Erreur IA</p>
+            <p className="text-sm text-game-danger-soft-foreground">
               {snapshot.errorMessage ?? "Une erreur IA est survenue pendant la manche."}
             </p>
           </section>
         ) : null}
 
         {snapshot?.phase === "WRITING" ? (
-          <section className="space-y-3 rounded-2xl bg-white/85 px-4 py-4">
-            <p className="text-sm font-semibold text-zinc-700">
+          <section className="space-y-3 rounded-2xl bg-game-surface-strong px-4 py-4">
+            <p className="text-sm font-semibold text-muted-foreground">
               Écrivez une définition crédible pour piéger les autres joueurs
             </p>
             <textarea
@@ -266,17 +266,17 @@ export default function GamePage() {
               maxLength={280}
               rows={4}
               placeholder="Votre définition..."
-              className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm outline-none ring-orange-400 focus:ring-2"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none ring-ring focus:ring-2"
             />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-accent-soft-foreground">
                 Soumissions: {snapshot.round?.submittedCount ?? 0}/{snapshot.players.length}
               </p>
               <button
                 type="button"
                 onClick={handleSubmitDefinition}
                 disabled={pendingAction !== null || !definitionInput.trim()}
-                className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {snapshot.round?.hasSubmitted
                   ? "Modifier ma définition"
@@ -289,8 +289,8 @@ export default function GamePage() {
         ) : null}
 
         {snapshot?.phase === "VOTING" ? (
-          <section className="space-y-3 rounded-2xl bg-white/85 px-4 py-4">
-            <p className="text-sm font-semibold text-zinc-700">
+          <section className="space-y-3 rounded-2xl bg-game-surface-strong px-4 py-4">
+            <p className="text-sm font-semibold text-muted-foreground">
               Votez pour la définition que vous pensez correcte
             </p>
             <div className="space-y-2">
@@ -302,24 +302,24 @@ export default function GamePage() {
                   disabled={pendingAction !== null}
                   className={`w-full rounded-xl px-3 py-2 text-left text-sm transition ${
                     snapshot.round?.votedOptionId === option.id
-                      ? "bg-orange-100"
-                      : "bg-white hover:bg-sky-100"
+                      ? "bg-game-accent-soft"
+                      : "bg-background hover:bg-game-info-soft"
                   } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
-                  <span className="mr-2 font-bold text-sky-700">{index + 1}.</span>
+                  <span className="mr-2 font-bold text-game-info-soft-foreground">{index + 1}.</span>
                   {option.text}
                 </button>
               ))}
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-info-soft-foreground">
               Votes: {snapshot.round?.votedCount ?? 0}/{snapshot.players.length}
             </p>
           </section>
         ) : null}
 
         {snapshot?.phase === "ROUND_RESULTS" ? (
-          <section className="space-y-3 rounded-2xl bg-white/90 px-4 py-4">
-            <p className="text-sm font-semibold text-zinc-700">Révélation des définitions</p>
+          <section className="space-y-3 rounded-2xl bg-game-surface-strong px-4 py-4">
+            <p className="text-sm font-semibold text-muted-foreground">Révélation des définitions</p>
             <div className="space-y-2">
               {(snapshot.round?.options ?? []).map((option) => (
                 (() => {
@@ -328,10 +328,10 @@ export default function GamePage() {
                     option.id === currentPlayerDefinitionOptionId;
 
                   const optionClassName = isCorrect
-                    ? "bg-emerald-100 text-emerald-900"
+                    ? "bg-game-success-soft text-game-success-soft-foreground"
                     : isCurrentPlayerDefinition
-                      ? "bg-red-100 text-red-900"
-                      : "bg-white";
+                      ? "bg-game-danger-soft text-game-danger-soft-foreground"
+                      : "bg-background";
 
                   return (
                     <div
@@ -351,7 +351,7 @@ export default function GamePage() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 Classement après la manche
               </p>
               {sortedPlayers.map((player) => {
@@ -360,20 +360,20 @@ export default function GamePage() {
                 return (
                   <div
                     key={player.id}
-                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2"
+                    className="flex items-center justify-between rounded-xl bg-background px-3 py-2"
                   >
-                    <span className="text-sm font-semibold text-zinc-800">
+                    <span className="text-sm font-semibold text-foreground">
                       {player.name}
                       {player.id === session?.playerId ? " (vous)" : ""}
                       {player.isHost ? " · hôte" : ""}
                     </span>
                     <div className="flex items-center gap-2">
                       {roundGain > 0 ? (
-                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
+                        <span className="rounded-full bg-game-success-soft px-2 py-0.5 text-xs font-bold text-game-success-soft-foreground">
                           +{roundGain}
                         </span>
                       ) : null}
-                      <span className="text-sm font-black text-orange-700">{player.score} pts</span>
+                      <span className="text-sm font-black text-primary">{player.score} pts</span>
                     </div>
                   </div>
                 );
@@ -385,7 +385,7 @@ export default function GamePage() {
                 type="button"
                 onClick={handleNextRound}
                 disabled={pendingAction !== null}
-                className="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {pendingAction === "next"
                   ? "Chargement..."
@@ -394,7 +394,7 @@ export default function GamePage() {
                     : "Manche suivante"}
               </button>
             ) : (
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-success-soft-foreground">
                 {isLastRoundResults
                   ? "En attente de l&apos;hôte pour afficher les résultats finaux"
                   : "En attente de l&apos;hôte pour la manche suivante"}
@@ -407,13 +407,13 @@ export default function GamePage() {
           type="button"
           onClick={handleLeave}
           disabled={pendingAction !== null}
-          className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Quitter la partie
         </button>
 
         {error || streamError ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
             {error ?? streamError}
           </p>
         ) : null}
