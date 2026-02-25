@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Le jeu du Dico
 
-## Getting Started
+MVP mobile-first multijoueur en francais avec Next.js (App Router), SSE + HTTP, et etat des parties en memoire serveur.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 + React 19
+- Etat de partie en RAM (processus Node unique)
+- Temps reel via SSE (`/api/rooms/[code]/events`)
+- IA via Vercel AI Gateway (modele par defaut: `google/gemini-3-flash`)
+
+## Setup local
+
+1. Installer les dependances:
+
+```bash
+npm install
+```
+
+2. Configurer l'environnement:
+
+```bash
+cp .env.example .env.local
+```
+
+Puis renseigner au minimum:
+
+- `VERCEL_AI_GATEWAY_API_KEY`
+- `LLM_MODEL` (optionnel, defaut `google/gemini-3-flash`)
+
+3. Lancer l'app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App disponible sur `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` lance le serveur de dev
+- `npm run lint` lance ESLint
+- `npm run build` build production
+- `npm run start` lance le build en mode prod
 
-## Learn More
+## Regles MVP (actuelles)
 
-To learn more about Next.js, take a look at the following resources:
+- 5 manches, min 2 joueurs, max 8
+- Ecriture: 45s
+- Vote: 20s
+- Score: `+2` si vote correct, `+1` par vote recu sur sa definition
+- Defs anonymes et melangees, auto-vote autorise
+- Si pas de soumission: definition auto-generee
+- Si pas de vote: 0 point
+- Reconnexion joueur geree par session (`playerId` + `sessionToken`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## IA et definitions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Generation du mot difficile + vraie definition au debut de manche
+- Normalisation batch des definitions joueurs en 1 call IA par manche (nominal):
+  - correction orthographe, accents, apostrophes, casse et ponctuation
+  - pas de reformulation (garde-fous serveur anti-paraphrase)
+- Style de la vraie definition: court, naturel, sans point final
 
-## Deploy on Vercel
+## Endpoints API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `POST /api/rooms`
+- `POST /api/rooms/[code]/join`
+- `GET /api/rooms/[code]/snapshot`
+- `GET /api/rooms/[code]/events`
+- `POST /api/rooms/[code]/start`
+- `POST /api/rooms/[code]/submit`
+- `POST /api/rooms/[code]/vote`
+- `POST /api/rooms/[code]/next-round`
+- `POST /api/rooms/[code]/play-again`
+- `POST /api/rooms/[code]/leave`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes de deploiement
+
+- Ce MVP suppose un seul processus Node actif.
+- L'etat n'est pas persiste en base: redemarrage serveur = parties perdues.

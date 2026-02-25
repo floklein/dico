@@ -48,12 +48,13 @@ export default function HomePage() {
     [roomCode],
   );
 
-  const canSubmit = playerName.trim().length > 0;
+  const hasPseudo = playerName.trim().length > 0;
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
-    if (!canSubmit) {
-      setError("Entrez un pseudo.");
+
+    if (!hasPseudo) {
+      setError("Commencez par choisir un pseudo.");
       return;
     }
 
@@ -81,8 +82,9 @@ export default function HomePage() {
 
   async function handleJoin(event: FormEvent) {
     event.preventDefault();
-    if (!canSubmit) {
-      setError("Entrez un pseudo.");
+
+    if (!hasPseudo) {
+      setError("Commencez par choisir un pseudo.");
       return;
     }
 
@@ -117,21 +119,19 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-10 text-zinc-900">
-      <section className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-3xl border border-amber-300/60 bg-white/90 p-6 shadow-lg shadow-orange-200/50">
-        <header className="space-y-2 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700">
-            Multijoueur
-          </p>
-          <h1 className="text-3xl font-black leading-tight text-orange-900">
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-8 text-zinc-900">
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <header className="rounded-2xl bg-white/65 px-4 py-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
             Le jeu du Dico
-          </h1>
-          <p className="text-sm text-zinc-700">
-            Écris une fausse définition crédible, puis vote pour la vraie.
+          </p>
+          <h1 className="mt-1 text-2xl font-black text-orange-900">Bluffe sur des définitions</h1>
+          <p className="mt-1 text-sm text-zinc-700">
+            Écris une définition plausible, vote pour la vraie, marque des points
           </p>
         </header>
 
-        <form className="space-y-4" onSubmit={handleCreate}>
+        <section className="rounded-2xl bg-white/80 px-4 py-4">
           <label className="block space-y-2 text-sm font-semibold text-zinc-700">
             Pseudo
             <input
@@ -139,51 +139,58 @@ export default function HomePage() {
               onChange={(event) => setPlayerName(event.target.value)}
               placeholder="Ex: Camille"
               maxLength={32}
-              className="w-full rounded-2xl border border-amber-300 bg-white px-4 py-3 text-base outline-none ring-orange-400 transition focus:ring-2"
+              className="w-full rounded-xl border border-amber-300 bg-white px-4 py-3 text-base outline-none ring-orange-400 transition focus:ring-2"
             />
           </label>
+        </section>
 
-          <button
-            type="submit"
-            disabled={pendingAction !== null}
-            className="w-full rounded-2xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pendingAction === "create" ? "Création..." : "Créer un salon"}
-          </button>
-        </form>
+        <section className="space-y-3 rounded-2xl bg-white/80 px-4 py-4">
+          <form onSubmit={handleCreate}>
+            <button
+              type="submit"
+              disabled={pendingAction !== null || !hasPseudo}
+              className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pendingAction === "create" ? "Création..." : "Créer un salon"}
+            </button>
+          </form>
 
-        <div className="relative text-center text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-          <span className="bg-white px-3">ou rejoindre</span>
-        </div>
+          <div className="relative py-1">
+            <div className="h-px w-full bg-amber-300/80" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+              ou
+            </span>
+          </div>
 
-        <form className="space-y-4" onSubmit={handleJoin}>
-          <label className="block space-y-2 text-sm font-semibold text-zinc-700">
-            Code salon (4 lettres)
-            <input
-              value={normalizedRoomCode}
-              onChange={(event) => setRoomCode(event.target.value)}
-              placeholder="ABCD"
-              maxLength={4}
-              autoCapitalize="characters"
-              className="w-full rounded-2xl border border-amber-300 bg-white px-4 py-3 text-base uppercase tracking-[0.2em] outline-none ring-orange-400 transition focus:ring-2"
-            />
-          </label>
+          <form className="space-y-3" onSubmit={handleJoin}>
+            <label className="block space-y-2 text-sm font-semibold text-zinc-700">
+              Code
+              <input
+                value={normalizedRoomCode}
+                onChange={(event) => setRoomCode(event.target.value)}
+                placeholder="ABCD"
+                maxLength={4}
+                autoCapitalize="characters"
+                className="w-full rounded-xl border border-amber-300 bg-white px-4 py-3 text-base uppercase tracking-[0.2em] outline-none ring-orange-400 transition focus:ring-2"
+              />
+            </label>
 
-          <button
-            type="submit"
-            disabled={pendingAction !== null}
-            className="w-full rounded-2xl border border-orange-600 px-4 py-3 text-base font-semibold text-orange-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {pendingAction === "join" ? "Connexion..." : "Rejoindre le salon"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={pendingAction !== null || !hasPseudo}
+              className="w-full rounded-xl bg-orange-100 px-4 py-3 text-base font-semibold text-orange-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {pendingAction === "join" ? "Connexion..." : "Rejoindre le salon"}
+            </button>
+          </form>
+        </section>
 
         {error ? (
-          <p className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </p>
         ) : null}
-      </section>
+      </div>
     </main>
   );
 }

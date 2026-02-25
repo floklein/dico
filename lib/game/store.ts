@@ -162,6 +162,10 @@ export class RoomManager {
               room.phase === "ROUND_RESULTS" || room.phase === "FINAL_RESULTS"
                 ? round.correctOptionId
                 : null,
+            roundScoreDeltaByPlayerId:
+              room.phase === "ROUND_RESULTS"
+                ? Object.fromEntries(round.roundScoreDeltaByPlayerId.entries())
+                : null,
           }
         : null,
       updatedAt: room.updatedAt,
@@ -245,6 +249,7 @@ export class RoomManager {
       round: null,
       roundTimeout: null,
       currentRoundNumber: 0,
+      usedWords: new Set<string>(),
       isFinalizingWriting: false,
       isFinalizingVoting: false,
       updatedAt: joinedAt,
@@ -378,7 +383,8 @@ export class RoomManager {
   private async prepareNewRound(room: InternalRoom): Promise<void> {
     room.currentRoundNumber += 1;
     const roundNumber = room.currentRoundNumber;
-    const generated = await generateRoundWord(roundNumber);
+    const generated = await generateRoundWord(roundNumber, [...room.usedWords]);
+    room.usedWords.add(generated.word.toLocaleLowerCase("fr-FR"));
     const phaseStartedAt = now();
 
     const round: InternalRoundState = {
@@ -389,6 +395,7 @@ export class RoomManager {
       definitionsByPlayerId: new Map<string, PlayerRoundDefinition>(),
       options: [],
       votesByPlayerId: new Map<string, string>(),
+      roundScoreDeltaByPlayerId: new Map<string, number>(),
       phaseStartedAt,
       phaseEndsAt: phaseStartedAt + room.settings.writingDurationSec * 1000,
     };
@@ -421,6 +428,7 @@ export class RoomManager {
 
     room.currentRoundNumber = 0;
     room.round = null;
+    room.usedWords.clear();
     await this.prepareNewRound(room);
 
     return this.getSnapshot(room.code, session.playerId);
@@ -587,6 +595,11 @@ export class RoomManager {
     try {
       const round = room.round;
       const optionById = new Map(round.options.map((option) => [option.id, option]));
+      const scoreDeltas = new Map<string, number>();
+
+      for (const player of room.players.values()) {
+        scoreDeltas.set(player.id, 0);
+      }
 
       for (const [voterPlayerId, votedOptionId] of round.votesByPlayerId.entries()) {
         const votedOption = optionById.get(votedOptionId);
@@ -598,6 +611,7 @@ export class RoomManager {
           const voter = room.players.get(voterPlayerId);
           if (voter) {
             voter.score += 2;
+            scoreDeltas.set(voter.id, (scoreDeltas.get(voter.id) ?? 0) + 2);
           }
           continue;
         }
@@ -606,9 +620,12 @@ export class RoomManager {
           const owner = room.players.get(votedOption.ownerPlayerId);
           if (owner) {
             owner.score += 1;
+            scoreDeltas.set(owner.id, (scoreDeltas.get(owner.id) ?? 0) + 1);
           }
         }
       }
+
+      round.roundScoreDeltaByPlayerId = scoreDeltas;
 
       const isFinalRound = round.roundNumber >= room.settings.totalRounds;
       const notEnoughPlayers = room.players.size < room.settings.minPlayers;
@@ -655,6 +672,7 @@ export class RoomManager {
     this.clearTimer(room);
     room.currentRoundNumber = 0;
     room.round = null;
+    room.usedWords.clear();
     room.phase = "LOBBY";
     room.isFinalizingWriting = false;
     room.isFinalizingVoting = false;

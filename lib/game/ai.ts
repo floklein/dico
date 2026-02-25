@@ -95,60 +95,189 @@ async function callGatewayJson<T>(
   return JSON.parse(extractJsonText(content)) as T;
 }
 
-function fallbackGeneratedWord(index: number): GeneratedRoundWord {
+function fallbackGeneratedWord(
+  roundIndex: number,
+  excludedWords: string[] = [],
+): GeneratedRoundWord {
   const entries: GeneratedRoundWord[] = [
     {
       word: "Épenthèse",
       correctDefinition:
-        "Ajout d'un son ou d'une lettre à l'intérieur d'un mot pour faciliter la prononciation.",
+        "On ajoute un son ou une lettre dans un mot pour que ce soit plus facile à prononcer",
     },
     {
       word: "Hypallage",
       correctDefinition:
-        "Figure de style qui attribue à un mot ce qui conviendrait logiquement à un autre.",
+        "On donne à un mot une qualité qui devrait aller à un autre mot",
     },
     {
       word: "Logorrhée",
       correctDefinition:
-        "Flux de parole abondant, rapide et souvent difficile à interrompre.",
+        "Quelqu'un parle beaucoup trop et on n'arrive pas à l'arrêter",
     },
     {
       word: "Prolepse",
       correctDefinition:
-        "Figure consistant à anticiper un événement futur comme s'il était déjà réalisé.",
+        "On parle d'un événement futur comme s'il était déjà arrivé",
     },
     {
       word: "Sérendipité",
       correctDefinition:
-        "Fait de découvrir quelque chose d'utile ou précieux de manière inattendue.",
+        "On tombe par hasard sur quelque chose d'utile ou de précieux",
+    },
+    {
+      word: "Anacoluthe",
+      correctDefinition:
+        "La phrase casse sa construction en cours de route",
+    },
+    {
+      word: "Paronomase",
+      correctDefinition:
+        "On rapproche des mots qui se ressemblent pour créer un effet",
+    },
+    {
+      word: "Synecdoque",
+      correctDefinition:
+        "On prend une partie pour parler du tout ou l'inverse",
+    },
+    {
+      word: "Aposiopèse",
+      correctDefinition:
+        "La phrase s'interrompt brusquement comme si on la laissait en suspens",
+    },
+    {
+      word: "Antonomase",
+      correctDefinition:
+        "On utilise un nom propre comme un nom commun ou l'inverse",
+    },
+    {
+      word: "Diérèse",
+      correctDefinition:
+        "On prononce en deux sons ce qui se dit souvent en un seul",
+    },
+    {
+      word: "Métonymie",
+      correctDefinition:
+        "On remplace un mot par un autre qui lui est lié",
+    },
+    {
+      word: "Prosopopée",
+      correctDefinition:
+        "On fait parler une personne absente, morte ou une chose",
+    },
+    {
+      word: "Hypotypose",
+      correctDefinition:
+        "On décrit une scène comme si elle se passait sous les yeux",
+    },
+    {
+      word: "Périphrase",
+      correctDefinition:
+        "On remplace un mot simple par une expression plus longue",
+    },
+    {
+      word: "Syllepse",
+      correctDefinition:
+        "Un mot est compris en même temps dans deux sens",
+    },
+    {
+      word: "Litote",
+      correctDefinition:
+        "On dit moins pour faire entendre plus",
+    },
+    {
+      word: "Apocope",
+      correctDefinition:
+        "On coupe la fin d'un mot dans la langue courante",
+    },
+    {
+      word: "Épanorthose",
+      correctDefinition:
+        "On corrige son propre propos en le renforçant juste après",
+    },
+    {
+      word: "Ellipse",
+      correctDefinition:
+        "On retire des mots qu'on peut deviner sans problème",
+    },
+    {
+      word: "Allitération",
+      correctDefinition:
+        "On répète les mêmes sons consonnes pour l'effet",
+    },
+    {
+      word: "Assonance",
+      correctDefinition:
+        "On répète des sons voyelles pour créer une musicalité",
+    },
+    {
+      word: "Chiasme",
+      correctDefinition:
+        "Deux groupes de mots se répondent en ordre inversé",
+    },
+    {
+      word: "Zeugma",
+      correctDefinition:
+        "Un même mot gouverne deux compléments de nature différente",
+    },
+    {
+      word: "Énallage",
+      correctDefinition:
+        "On change volontairement la personne ou le temps attendu",
     },
   ];
 
-  return entries[index % entries.length];
+  const excluded = new Set(excludedWords.map((word) => word.toLocaleLowerCase("fr-FR")));
+  const candidates = entries.filter(
+    (entry) => !excluded.has(entry.word.toLocaleLowerCase("fr-FR")),
+  );
+  const pool = candidates.length > 0 ? candidates : entries;
+  const randomIndex = Math.floor(Math.random() * pool.length);
+  return pool[(randomIndex + roundIndex) % pool.length];
 }
 
-export async function generateRoundWord(roundIndex: number): Promise<GeneratedRoundWord> {
+function normalizeCorrectDefinition(input: string): string {
+  return cleanTextBasic(input).replace(/[.;:]+\s*$/u, "").trim();
+}
+
+export async function generateRoundWord(
+  roundIndex: number,
+  excludedWords: string[] = [],
+): Promise<GeneratedRoundWord> {
   try {
+    const excludedPrompt =
+      excludedWords.length > 0
+        ? `Mots à ne pas proposer: ${excludedWords.join(", ")}.`
+        : "";
+
     const json = await callGatewayJson<{ word: string; correctDefinition: string }>(
       [
-        "Tu es lexicographe français.",
-        "Tu dois fournir un mot français très difficile mais authentique et sa définition correcte.",
+        "Tu fournis un mot français difficile et sa bonne définition pour un jeu multijoueur.",
         "Réponds strictement en JSON: {\"word\": string, \"correctDefinition\": string}.",
-        "La définition doit faire une seule phrase concise en français.",
+        "La définition doit être courte, claire, en langage courant.",
+        "Style attendu: réponse écrite vite dans un jeu, ton naturel contrôlé.",
+        "Interdiction du ton académique et du jargon inutile.",
+        "La définition ne doit pas finir par un point final.",
+        excludedPrompt,
       ].join(" "),
       "Donne un seul mot difficile inédit (évite de répéter les mots les plus connus) et sa définition correcte.",
     );
 
     const word = cleanTextBasic(String(json.word ?? ""));
-    const correctDefinition = cleanTextBasic(String(json.correctDefinition ?? ""));
+    const correctDefinition = normalizeCorrectDefinition(String(json.correctDefinition ?? ""));
 
     if (!word || !correctDefinition) {
       throw new Error("Sortie IA invalide pour le mot.");
     }
 
+    const excluded = new Set(excludedWords.map((item) => item.toLocaleLowerCase("fr-FR")));
+    if (excluded.has(word.toLocaleLowerCase("fr-FR"))) {
+      throw new Error("Mot déjà utilisé.");
+    }
+
     return { word, correctDefinition };
   } catch {
-    return fallbackGeneratedWord(roundIndex);
+    return fallbackGeneratedWord(roundIndex, excludedWords);
   }
 }
 

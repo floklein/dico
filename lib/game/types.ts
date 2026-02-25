@@ -40,6 +40,7 @@ export interface RoundState {
   hasVoted: boolean;
   votedOptionId: string | null;
   correctOptionId: string | null;
+  roundScoreDeltaByPlayerId: Record<string, number> | null;
 }
 
 export interface RoomState {
@@ -101,6 +102,7 @@ export interface InternalRoundState {
   definitionsByPlayerId: Map<string, PlayerRoundDefinition>;
   options: InternalDefinitionOption[];
   votesByPlayerId: Map<string, string>;
+  roundScoreDeltaByPlayerId: Map<string, number>;
   phaseStartedAt: number;
   phaseEndsAt: number | null;
 }
@@ -114,6 +116,7 @@ export interface InternalRoom {
   round: InternalRoundState | null;
   roundTimeout: NodeJS.Timeout | null;
   currentRoundNumber: number;
+  usedWords: Set<string>;
   isFinalizingWriting: boolean;
   isFinalizingVoting: boolean;
   updatedAt: number;

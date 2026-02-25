@@ -135,17 +135,15 @@ export default function LobbyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-8 text-zinc-900">
-      <section className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl border border-amber-300/60 bg-white/90 p-5 shadow-lg shadow-orange-200/40">
-        <header className="space-y-1 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-700">
-            Salon
-          </p>
-          <h1 className="text-3xl font-black text-orange-900">{roomCode || "...."}</h1>
-          <p className="text-sm text-zinc-700">Attente des joueurs avant le lancement.</p>
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-6 text-zinc-900">
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <header className="rounded-2xl bg-white/70 px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Lobby</p>
+          <h1 className="mt-1 text-3xl font-black text-orange-900">{roomCode || "...."}</h1>
+          <p className="mt-1 text-sm text-zinc-700">Attends les joueurs puis lance la partie</p>
         </header>
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <section className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-zinc-700">
           <p>
             Vous êtes: <strong>{me?.name ?? session?.playerName ?? "..."}</strong>
           </p>
@@ -155,13 +153,13 @@ export default function LobbyPage() {
           <p>
             Joueurs: <strong>{snapshot?.players.length ?? 0}</strong> / {snapshot?.settings.maxPlayers ?? 8}
           </p>
-        </div>
+        </section>
 
         <ul className="space-y-2">
           {(snapshot?.players ?? []).map((player) => (
             <li
               key={player.id}
-              className="flex items-center justify-between rounded-2xl border border-orange-200 bg-white px-4 py-3"
+              className="flex items-center justify-between rounded-xl bg-white/80 px-4 py-3"
             >
               <span className="font-semibold text-zinc-800">
                 {player.name}
@@ -179,7 +177,7 @@ export default function LobbyPage() {
             type="button"
             onClick={handleStart}
             disabled={!me?.isHost || pendingAction !== null || (snapshot?.players.length ?? 0) < 2}
-            className="w-full rounded-2xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "start" ? "Démarrage..." : "Démarrer la partie"}
           </button>
@@ -187,18 +185,18 @@ export default function LobbyPage() {
             type="button"
             onClick={handleLeave}
             disabled={pendingAction !== null}
-            className="w-full rounded-2xl border border-zinc-300 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Quitter le salon
           </button>
         </div>
 
         {error || streamError ? (
-          <p className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
             {error ?? streamError}
           </p>
         ) : null}
-      </section>
+      </div>
     </main>
   );
 }

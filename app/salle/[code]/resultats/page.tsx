@@ -142,14 +142,14 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-100 to-orange-200 px-4 py-8 text-zinc-900">
-      <section className="mx-auto flex w-full max-w-md flex-col gap-5 rounded-3xl border border-amber-300/60 bg-white/95 p-6 shadow-xl shadow-orange-300/40">
-        <header className="space-y-2 text-center">
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-6 text-zinc-900">
+      <div className="mx-auto w-full max-w-md space-y-4">
+        <header className="rounded-2xl bg-white/75 px-4 py-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
             Partie terminée
           </p>
-          <h1 className="text-3xl font-black text-orange-900">Résultats finaux</h1>
-          <p className="text-sm text-zinc-700">
+          <h1 className="mt-1 text-3xl font-black text-orange-900">Résultats finaux</h1>
+          <p className="mt-1 text-sm text-zinc-700">
             {winners.length > 1
               ? `Égalité: ${winners.map((player) => player.name).join(", ")}`
               : `Vainqueur: ${winners[0]?.name ?? "-"}`}
@@ -157,23 +157,27 @@ export default function ResultsPage() {
         </header>
 
         <ul className="space-y-2">
-          {sortedPlayers.map((player, index) => (
-            <li
-              key={player.id}
-              className={`flex items-center justify-between rounded-2xl border px-4 py-3 ${
-                index === 0
-                  ? "border-orange-400 bg-orange-100"
-                  : "border-zinc-200 bg-white"
-              }`}
-            >
-              <span className="text-sm font-semibold text-zinc-800">
-                #{index + 1} {player.name}
-                {player.id === session?.playerId ? " (vous)" : ""}
-                {player.isHost ? " · hôte" : ""}
-              </span>
-              <span className="text-sm font-black text-orange-700">{player.score} pts</span>
-            </li>
-          ))}
+          {sortedPlayers.map((player, index) => {
+            const isCurrentPlayer = player.id === session?.playerId;
+
+            return (
+                <li
+                  key={player.id}
+                  className={`flex items-center justify-between rounded-xl px-4 py-3 ${
+                    isCurrentPlayer
+                    ? "bg-orange-100"
+                    : "bg-white/85"
+                }`}
+              >
+                <span className="text-sm font-semibold text-zinc-800">
+                  #{index + 1} {player.name}
+                  {isCurrentPlayer ? " (vous)" : ""}
+                  {player.isHost ? " · hôte" : ""}
+                </span>
+                <span className="text-sm font-black text-orange-700">{player.score} pts</span>
+              </li>
+            );
+          })}
         </ul>
 
         <div className="space-y-2">
@@ -181,7 +185,7 @@ export default function ResultsPage() {
             type="button"
             onClick={handleReplay}
             disabled={!me?.isHost || pendingAction !== null}
-            className="w-full rounded-2xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "replay" ? "Relance..." : "Rejouer"}
           </button>
@@ -189,18 +193,18 @@ export default function ResultsPage() {
             type="button"
             onClick={handleLeave}
             disabled={pendingAction !== null}
-            className="w-full rounded-2xl border border-zinc-300 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Quitter
           </button>
         </div>
 
         {error || streamError ? (
-          <p className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
             {error ?? streamError}
           </p>
         ) : null}
-      </section>
+      </div>
     </main>
   );
 }

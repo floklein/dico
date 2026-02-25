@@ -105,6 +105,14 @@ export default function GamePage() {
     return Math.max(0, Math.ceil((phaseEndsAt - nowMs) / 1000));
   }, [nowMs, snapshot?.round?.phaseEndsAt]);
 
+  const sortedPlayers = useMemo(
+    () =>
+      [...(snapshot?.players ?? [])].sort(
+        (a, b) => b.score - a.score || a.joinedAt - b.joinedAt,
+      ),
+    [snapshot?.players],
+  );
+
   useEffect(() => {
     if (snapshot?.phase === "WRITING") {
       setDefinitionInput("");
@@ -207,33 +215,28 @@ export default function GamePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-orange-50 to-amber-100 px-4 py-6 text-zinc-900">
-      <section className="mx-auto flex w-full max-w-xl flex-col gap-4 rounded-3xl border border-amber-300/60 bg-white/90 p-4 shadow-lg shadow-orange-200/40">
-        <header className="flex items-start justify-between gap-3 rounded-2xl bg-orange-50 px-4 py-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-700">
-              Manche {snapshot?.round?.roundNumber ?? "..."} / {snapshot?.settings.totalRounds ?? 5}
-            </p>
-            <h1 className="text-xl font-black text-orange-900">Le jeu du Dico</h1>
-            <p className="text-sm text-zinc-700">Salon {roomCode}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Temps restant</p>
-            <p className="text-2xl font-black text-orange-700">{secondsLeft ?? "--"}s</p>
+    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-5 text-zinc-900">
+      <div className="mx-auto w-full max-w-xl space-y-3">
+        <header className="flex items-center justify-between gap-3 rounded-2xl bg-white/80 px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-800">
+            Manche {snapshot?.round?.roundNumber ?? "..."}/{snapshot?.settings.totalRounds ?? 5} · Salon {roomCode}
+          </p>
+          <div className="rounded-full bg-orange-100 px-3 py-1 text-sm font-black text-orange-800">
+            {secondsLeft ?? "--"}s
           </div>
         </header>
 
         {snapshot?.round?.word ? (
-          <div className="rounded-2xl border border-orange-200 bg-white px-4 py-3 text-center">
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Mot</p>
+          <section className="rounded-2xl bg-white/80 px-4 py-4 text-center">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Mot</p>
             <p className="mt-1 text-3xl font-black text-orange-900">{snapshot.round.word}</p>
-          </div>
+          </section>
         ) : null}
 
         {snapshot?.phase === "WRITING" ? (
-          <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <section className="space-y-3 rounded-2xl bg-white/85 px-4 py-4">
             <p className="text-sm font-semibold text-zinc-700">
-              Écrivez une définition crédible pour piéger les autres joueurs.
+              Écrivez une définition crédible pour piéger les autres joueurs
             </p>
             <textarea
               value={definitionInput}
@@ -260,13 +263,13 @@ export default function GamePage() {
                     : "Envoyer"}
               </button>
             </div>
-          </div>
+          </section>
         ) : null}
 
         {snapshot?.phase === "VOTING" ? (
-          <div className="space-y-3 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <section className="space-y-3 rounded-2xl bg-white/85 px-4 py-4">
             <p className="text-sm font-semibold text-zinc-700">
-              Votez pour la définition que vous pensez correcte.
+              Votez pour la définition que vous pensez correcte
             </p>
             <div className="space-y-2">
               {(snapshot.round?.options ?? []).map((option, index) => (
@@ -275,10 +278,10 @@ export default function GamePage() {
                   type="button"
                   onClick={() => handleVote(option.id)}
                   disabled={pendingAction !== null}
-                  className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
+                  className={`w-full rounded-xl px-3 py-2 text-left text-sm transition ${
                     snapshot.round?.votedOptionId === option.id
-                      ? "border-orange-500 bg-orange-100"
-                      : "border-sky-200 bg-white hover:bg-sky-100"
+                      ? "bg-orange-100"
+                      : "bg-white hover:bg-sky-100"
                   } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   <span className="mr-2 font-bold text-sky-700">{index + 1}.</span>
@@ -289,26 +292,57 @@ export default function GamePage() {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
               Votes: {snapshot.round?.votedCount ?? 0}/{snapshot.players.length}
             </p>
-          </div>
+          </section>
         ) : null}
 
         {snapshot?.phase === "ROUND_RESULTS" ? (
-          <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-sm font-semibold text-zinc-700">Résultats de la manche.</p>
+          <section className="space-y-3 rounded-2xl bg-white/90 px-4 py-4">
+            <p className="text-sm font-semibold text-zinc-700">Révélation des définitions</p>
             <div className="space-y-2">
               {(snapshot.round?.options ?? []).map((option) => (
                 <div
                   key={option.id}
-                  className={`rounded-xl border px-3 py-2 text-sm ${
+                  className={`rounded-xl px-3 py-2 text-sm ${
                     option.id === snapshot.round?.correctOptionId
-                      ? "border-emerald-500 bg-emerald-100 text-emerald-900"
-                      : "border-emerald-200 bg-white"
+                      ? "bg-emerald-100 text-emerald-900"
+                      : "bg-white"
                   }`}
                 >
                   {option.text}
                 </div>
               ))}
             </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
+                Classement après la manche
+              </p>
+              {sortedPlayers.map((player) => {
+                const roundGain = snapshot.round?.roundScoreDeltaByPlayerId?.[player.id] ?? 0;
+
+                return (
+                  <div
+                    key={player.id}
+                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2"
+                  >
+                    <span className="text-sm font-semibold text-zinc-800">
+                      {player.name}
+                      {player.id === session?.playerId ? " (vous)" : ""}
+                      {player.isHost ? " · hôte" : ""}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {roundGain > 0 ? (
+                        <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
+                          +{roundGain}
+                        </span>
+                      ) : null}
+                      <span className="text-sm font-black text-orange-700">{player.score} pts</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {me?.isHost ? (
               <button
                 type="button"
@@ -320,48 +354,27 @@ export default function GamePage() {
               </button>
             ) : (
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
-                En attente de l&apos;hôte pour la manche suivante.
+                En attente de l&apos;hôte pour la manche suivante
               </p>
             )}
-          </div>
+          </section>
         ) : null}
-
-        <section className="space-y-2 rounded-2xl border border-zinc-200 bg-white p-3">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-500">
-            Classement en direct
-          </p>
-          {[...(snapshot?.players ?? [])]
-            .sort((a, b) => b.score - a.score || a.joinedAt - b.joinedAt)
-            .map((player) => (
-              <div
-                key={player.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 px-3 py-2"
-              >
-                <span className="text-sm font-semibold text-zinc-800">
-                  {player.name}
-                  {player.id === session?.playerId ? " (vous)" : ""}
-                  {player.isHost ? " · hôte" : ""}
-                </span>
-                <span className="text-sm font-black text-orange-700">{player.score} pts</span>
-              </div>
-            ))}
-        </section>
 
         <button
           type="button"
           onClick={handleLeave}
           disabled={pendingAction !== null}
-          className="w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Quitter la partie
         </button>
 
         {error || streamError ? (
-          <p className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
             {error ?? streamError}
           </p>
         ) : null}
-      </section>
+      </div>
     </main>
   );
 }
