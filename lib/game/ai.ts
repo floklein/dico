@@ -5,7 +5,7 @@ import {
 } from "@/lib/game/helpers";
 
 const AI_GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
-const DEFAULT_MODEL = "google/gemini-3-flash";
+const DEFAULT_MODEL = "openai/gpt-5.2";
 
 interface ChatCompletionResponse {
   choices?: Array<{
@@ -65,26 +65,48 @@ async function callGatewayJson<T>(
     throw new Error("Clé VERCEL_AI_GATEWAY_API_KEY manquante.");
   }
 
-  const response = await fetch(AI_GATEWAY_URL, {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${key}`,
+  };
+
+  const basePayload = {
+    model: getModelName(),
+    temperature,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+  };
+
+  let response = await fetch(AI_GATEWAY_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
+    headers,
     body: JSON.stringify({
-      model: getModelName(),
-      temperature,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
+      ...basePayload,
       response_format: { type: "json_object" },
     }),
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Erreur IA (${response.status}): ${errorText}`);
+    const firstErrorText = await response.text();
+    const shouldRetryWithoutResponseFormat =
+      response.status === 400 && firstErrorText.toLowerCase().includes("response_format");
+
+    if (!shouldRetryWithoutResponseFormat) {
+      throw new Error(`Erreur IA (${response.status}): ${firstErrorText}`);
+    }
+
+    response = await fetch(AI_GATEWAY_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(basePayload),
+    });
+
+    if (!response.ok) {
+      const secondErrorText = await response.text();
+      throw new Error(`Erreur IA (${response.status}): ${secondErrorText}`);
+    }
   }
 
   const body = (await response.json()) as ChatCompletionResponse;
