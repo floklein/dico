@@ -1,11 +1,17 @@
 const ROOM_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+function secureRandomHex(byteLength: number): string {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
 export function randomId(prefix = "id"): string {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+  return `${prefix}_${secureRandomHex(8)}`;
 }
 
 export function randomSessionToken(): string {
-  return Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  return secureRandomHex(32);
 }
 
 export function createRoomCode(existingCodes: Set<string>): string {
