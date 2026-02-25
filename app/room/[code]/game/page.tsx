@@ -233,6 +233,15 @@ export default function GamePage() {
           </section>
         ) : null}
 
+        {snapshot?.phase === "ERROR" ? (
+          <section className="space-y-2 rounded-2xl bg-red-50 px-4 py-4">
+            <p className="text-sm font-semibold text-red-800">Erreur IA</p>
+            <p className="text-sm text-red-700">
+              {snapshot.errorMessage ?? "Une erreur IA est survenue pendant la manche."}
+            </p>
+          </section>
+        ) : null}
+
         {snapshot?.phase === "WRITING" ? (
           <section className="space-y-3 rounded-2xl bg-white/85 px-4 py-4">
             <p className="text-sm font-semibold text-zinc-700">

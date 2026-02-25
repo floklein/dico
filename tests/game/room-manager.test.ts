@@ -141,3 +141,34 @@ describe("RoomManager leave flow", () => {
     expect(leaveSnapshot?.round?.votedCount).toBe(1);
   });
 });
+
+describe("RoomManager AI error state", () => {
+  it("switches to ERROR when round word generation fails", async () => {
+    const manager = new RoomManager();
+    const created = manager.createRoom("Host");
+    const roomCode = created.roomCode;
+    const hostSession = created.session;
+
+    manager.joinRoom(roomCode, "Alice");
+    mockedGenerateRoundWord.mockRejectedValueOnce(new Error("provider down"));
+
+    const snapshot = await manager.startGame(roomCode, hostSession);
+
+    expect(snapshot.phase).toBe("ERROR");
+    expect(snapshot.errorMessage).toContain("Erreur IA pendant la génération du mot de manche.");
+    expect(snapshot.errorMessage).toContain("provider down");
+  });
+
+  it("switches to ERROR when definition normalization fails", async () => {
+    const { manager, roomCode, hostSession, aliceSession, bobSession } = await createStartedRoom();
+    mockedNormalizeAndFillDefinitions.mockRejectedValueOnce(new Error("normalization failed"));
+
+    await manager.submitDefinition(roomCode, hostSession, "Definition host");
+    await manager.submitDefinition(roomCode, aliceSession, "Definition alice");
+    const snapshot = await manager.submitDefinition(roomCode, bobSession, "Definition bob");
+
+    expect(snapshot.phase).toBe("ERROR");
+    expect(snapshot.errorMessage).toContain("Erreur IA pendant la normalisation des définitions.");
+    expect(snapshot.errorMessage).toContain("normalization failed");
+  });
+});

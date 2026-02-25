@@ -58,6 +58,7 @@ function extractJsonText(content: string): string {
 async function callGatewayJson<T>(
   systemPrompt: string,
   userPrompt: string,
+  temperature = 0.2,
 ): Promise<T> {
   const key = getGatewayKey();
   if (!key) {
@@ -72,7 +73,7 @@ async function callGatewayJson<T>(
     },
     body: JSON.stringify({
       model: getModelName(),
-      temperature: 0.2,
+      temperature,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -95,203 +96,48 @@ async function callGatewayJson<T>(
   return JSON.parse(extractJsonText(content)) as T;
 }
 
-function fallbackGeneratedWord(
-  roundIndex: number,
-  excludedWords: string[] = [],
-): GeneratedRoundWord {
-  const entries: GeneratedRoundWord[] = [
-    {
-      word: "Épenthèse",
-      correctDefinition:
-        "On ajoute un son ou une lettre dans un mot pour que ce soit plus facile à prononcer",
-    },
-    {
-      word: "Hypallage",
-      correctDefinition:
-        "On donne à un mot une qualité qui devrait aller à un autre mot",
-    },
-    {
-      word: "Logorrhée",
-      correctDefinition:
-        "Quelqu'un parle beaucoup trop et on n'arrive pas à l'arrêter",
-    },
-    {
-      word: "Prolepse",
-      correctDefinition:
-        "On parle d'un événement futur comme s'il était déjà arrivé",
-    },
-    {
-      word: "Sérendipité",
-      correctDefinition:
-        "On tombe par hasard sur quelque chose d'utile ou de précieux",
-    },
-    {
-      word: "Anacoluthe",
-      correctDefinition:
-        "La phrase casse sa construction en cours de route",
-    },
-    {
-      word: "Paronomase",
-      correctDefinition:
-        "On rapproche des mots qui se ressemblent pour créer un effet",
-    },
-    {
-      word: "Synecdoque",
-      correctDefinition:
-        "On prend une partie pour parler du tout ou l'inverse",
-    },
-    {
-      word: "Aposiopèse",
-      correctDefinition:
-        "La phrase s'interrompt brusquement comme si on la laissait en suspens",
-    },
-    {
-      word: "Antonomase",
-      correctDefinition:
-        "On utilise un nom propre comme un nom commun ou l'inverse",
-    },
-    {
-      word: "Diérèse",
-      correctDefinition:
-        "On prononce en deux sons ce qui se dit souvent en un seul",
-    },
-    {
-      word: "Métonymie",
-      correctDefinition:
-        "On remplace un mot par un autre qui lui est lié",
-    },
-    {
-      word: "Prosopopée",
-      correctDefinition:
-        "On fait parler une personne absente, morte ou une chose",
-    },
-    {
-      word: "Hypotypose",
-      correctDefinition:
-        "On décrit une scène comme si elle se passait sous les yeux",
-    },
-    {
-      word: "Périphrase",
-      correctDefinition:
-        "On remplace un mot simple par une expression plus longue",
-    },
-    {
-      word: "Syllepse",
-      correctDefinition:
-        "Un mot est compris en même temps dans deux sens",
-    },
-    {
-      word: "Litote",
-      correctDefinition:
-        "On dit moins pour faire entendre plus",
-    },
-    {
-      word: "Apocope",
-      correctDefinition:
-        "On coupe la fin d'un mot dans la langue courante",
-    },
-    {
-      word: "Épanorthose",
-      correctDefinition:
-        "On corrige son propre propos en le renforçant juste après",
-    },
-    {
-      word: "Ellipse",
-      correctDefinition:
-        "On retire des mots qu'on peut deviner sans problème",
-    },
-    {
-      word: "Allitération",
-      correctDefinition:
-        "On répète les mêmes sons consonnes pour l'effet",
-    },
-    {
-      word: "Assonance",
-      correctDefinition:
-        "On répète des sons voyelles pour créer une musicalité",
-    },
-    {
-      word: "Chiasme",
-      correctDefinition:
-        "Deux groupes de mots se répondent en ordre inversé",
-    },
-    {
-      word: "Zeugma",
-      correctDefinition:
-        "Un même mot gouverne deux compléments de nature différente",
-    },
-    {
-      word: "Énallage",
-      correctDefinition:
-        "On change volontairement la personne ou le temps attendu",
-    },
-  ];
-
-  const excluded = new Set(excludedWords.map((word) => word.toLocaleLowerCase("fr-FR")));
-  const candidates = entries.filter(
-    (entry) => !excluded.has(entry.word.toLocaleLowerCase("fr-FR")),
-  );
-  const pool = candidates.length > 0 ? candidates : entries;
-  const randomIndex = Math.floor(Math.random() * pool.length);
-  return pool[(randomIndex + roundIndex) % pool.length];
-}
-
 function normalizeCorrectDefinition(input: string): string {
   return cleanTextBasic(input).replace(/[.;:]+\s*$/u, "").trim();
 }
 
 export async function generateRoundWord(
-  roundIndex: number,
+  _roundIndex: number,
   excludedWords: string[] = [],
 ): Promise<GeneratedRoundWord> {
-  try {
-    const excludedPrompt =
-      excludedWords.length > 0
-        ? `Mots à ne pas proposer: ${excludedWords.join(", ")}.`
-        : "";
+  const excludedPrompt =
+    excludedWords.length > 0
+      ? `Mots déjà utilisés et interdits: ${excludedWords.join(", ")}.`
+      : "";
 
-    const json = await callGatewayJson<{ word: string; correctDefinition: string }>(
-      [
-        "Tu fournis un mot français difficile et sa bonne définition pour un jeu multijoueur.",
-        "Réponds strictement en JSON: {\"word\": string, \"correctDefinition\": string}.",
-        "La définition doit être courte, claire, en langage courant.",
-        "Style attendu: réponse écrite vite dans un jeu, ton naturel contrôlé.",
-        "Interdiction du ton académique et du jargon inutile.",
-        "La définition ne doit pas finir par un point final.",
-        excludedPrompt,
-      ].join(" "),
-      "Donne un seul mot difficile inédit (évite de répéter les mots les plus connus) et sa définition correcte.",
-    );
+  const json = await callGatewayJson<{ word: string; correctDefinition: string }>(
+    [
+      "Tu fournis un mot français difficile et sa bonne définition pour un jeu multijoueur.",
+      "Réponds strictement en JSON: {\"word\": string, \"correctDefinition\": string}.",
+      "Le mot doit être authentique et peu courant.",
+      "La définition doit être naturelle, courte, imparfaite mais crédible, comme un joueur pressé.",
+      "Varie les tournures, évite les formulations répétitives et n'utilise pas systématiquement un début par \"On\".",
+      "La définition peut être un fragment court, pas forcément une phrase complète.",
+      "Interdiction du ton académique et du jargon inutile.",
+      "La définition ne doit pas finir par un point final.",
+      excludedPrompt,
+    ].join(" "),
+    "Donne un seul mot difficile inédit et sa définition correcte.",
+    0.7,
+  );
 
-    const word = cleanTextBasic(String(json.word ?? ""));
-    const correctDefinition = normalizeCorrectDefinition(String(json.correctDefinition ?? ""));
+  const word = cleanTextBasic(String(json.word ?? ""));
+  const correctDefinition = normalizeCorrectDefinition(String(json.correctDefinition ?? ""));
 
-    if (!word || !correctDefinition) {
-      throw new Error("Sortie IA invalide pour le mot.");
-    }
-
-    const excluded = new Set(excludedWords.map((item) => item.toLocaleLowerCase("fr-FR")));
-    if (excluded.has(word.toLocaleLowerCase("fr-FR"))) {
-      throw new Error("Mot déjà utilisé.");
-    }
-
-    return { word, correctDefinition };
-  } catch {
-    return fallbackGeneratedWord(roundIndex, excludedWords);
+  if (!word || !correctDefinition) {
+    throw new Error("Sortie IA invalide pour le mot.");
   }
-}
 
-function fallbackAutoDefinition(word: string, name: string): string {
-  const lowerWord = word.toLocaleLowerCase("fr-FR");
-  const templates = [
-    `${lowerWord} est un terme ancien employé dans certains écrits savants.`,
-    `${lowerWord} désigne une notion technique peu fréquente en français classique.`,
-    `${lowerWord} correspond à un usage rare observé dans la littérature érudite.`,
-    `${lowerWord} qualifie une idée spécifique dans un registre soutenu.`,
-  ];
+  const excluded = new Set(excludedWords.map((item) => item.toLocaleLowerCase("fr-FR")));
+  if (excluded.has(word.toLocaleLowerCase("fr-FR"))) {
+    throw new Error(`Mot déjà utilisé renvoyé par l'IA: ${word}.`);
+  }
 
-  const index = Math.abs((name.length + lowerWord.length) % templates.length);
-  return cleanTextBasic(templates[index]);
+  return { word, correctDefinition };
 }
 
 function editDistance(a: string, b: string): number {
@@ -345,10 +191,6 @@ function keepOriginalOrderAndCount(original: string, corrected: string): boolean
   return changedRatio <= 0.35;
 }
 
-function localCorrectionFallback(input: string): string {
-  return cleanTextBasic(input.replace(/\s+([,.;!?])/g, "$1"));
-}
-
 export async function normalizeAndFillDefinitions(
   word: string,
   correctDefinition: string,
@@ -358,95 +200,75 @@ export async function normalizeAndFillDefinitions(
     return [];
   }
 
-  const fallback = entries.map((entry) => {
+  const payload = {
+    word,
+    correctDefinition,
+    players: entries.map((entry) => ({
+      playerId: entry.playerId,
+      name: entry.name,
+      rawDefinition: entry.rawDefinition?.trim() || null,
+    })),
+  };
+
+  const json = await callGatewayJson<{ definitions: DefinitionBatchOutput[] }>(
+    [
+      "Tu normalises des définitions de joueurs pour un jeu en français.",
+      "Interdiction absolue de reformuler les définitions fournies par les joueurs.",
+      "Conserve l'ordre des mots et le choix lexical autant que possible.",
+      "Tu peux uniquement corriger: orthographe, accents, apostrophes, espaces, ponctuation, majuscules/minuscules.",
+      "Si rawDefinition est null, invente une fausse définition plausible (différente de la bonne), style joueur pressé: naturel, imparfait, parfois fragment, pas toujours une phrase complète.",
+      "Varie les débuts de phrase, évite toute formulation récurrente, n'utilise pas systématiquement des structures commençant par \"On\".",
+      "Quand plusieurs joueurs n'ont rien soumis, évite de leur donner des formulations trop proches entre elles.",
+      "Si rawDefinition est null: isAutoGenerated=true. Sinon: isAutoGenerated=false.",
+      "Réponds strictement en JSON: {\"definitions\":[{\"playerId\":string,\"correctedText\":string,\"isAutoGenerated\":boolean}]}",
+    ].join(" "),
+    JSON.stringify(payload),
+    0.4,
+  );
+
+  if (!Array.isArray(json.definitions)) {
+    throw new Error("Sortie IA invalide: definitions doit être un tableau.");
+  }
+
+  const byPlayerId = new Map<string, DefinitionBatchOutput>();
+  for (const item of json.definitions) {
+    if (!item || typeof item.playerId !== "string") {
+      continue;
+    }
+
+    const correctedText = cleanTextBasic(String(item.correctedText ?? ""));
+    byPlayerId.set(item.playerId, {
+      playerId: item.playerId,
+      correctedText,
+      isAutoGenerated: Boolean(item.isAutoGenerated),
+    });
+  }
+
+  return entries.map((entry) => {
+    const candidate = byPlayerId.get(entry.playerId);
+    if (!candidate || !candidate.correctedText) {
+      throw new Error(`Sortie IA incomplète pour le joueur ${entry.playerId}.`);
+    }
+
     if (!entry.rawDefinition?.trim()) {
       return {
         playerId: entry.playerId,
-        correctedText: fallbackAutoDefinition(word, entry.name),
+        correctedText: candidate.correctedText,
         isAutoGenerated: true,
       };
     }
 
+    const safe = keepOriginalOrderAndCount(entry.rawDefinition, candidate.correctedText);
+    if (!safe) {
+      throw new Error(
+        `La normalisation IA a reformulé la définition du joueur ${entry.playerId}.`,
+      );
+    }
+
     return {
       playerId: entry.playerId,
-      correctedText: localCorrectionFallback(entry.rawDefinition),
+      correctedText: candidate.correctedText,
       isAutoGenerated: false,
     };
   });
-
-  try {
-    const payload = {
-      word,
-      correctDefinition,
-      players: entries.map((entry) => ({
-        playerId: entry.playerId,
-        name: entry.name,
-        rawDefinition: entry.rawDefinition?.trim() || null,
-      })),
-    };
-
-    const json = await callGatewayJson<{ definitions: DefinitionBatchOutput[] }>(
-      [
-        "Tu normalises des définitions de joueurs pour un jeu en français.",
-        "Interdiction absolue de reformuler les définitions fournies par les joueurs.",
-        "Conserve l'ordre des mots et le choix lexical autant que possible.",
-        "Tu peux uniquement corriger: orthographe, accents, apostrophes, espaces, ponctuation, majuscules/minuscules.",
-        "Si rawDefinition est null, tu dois inventer une fausse définition plausible (différente de la bonne) et marquer isAutoGenerated=true.",
-        "Si rawDefinition n'est pas null: isAutoGenerated=false.",
-        "Réponds strictement en JSON: {\"definitions\":[{\"playerId\":string,\"correctedText\":string,\"isAutoGenerated\":boolean}]}",
-      ].join(" "),
-      JSON.stringify(payload),
-    );
-
-    if (!Array.isArray(json.definitions)) {
-      return fallback;
-    }
-
-    const byPlayerId = new Map<string, DefinitionBatchOutput>();
-
-    for (const item of json.definitions) {
-      if (!item || typeof item.playerId !== "string") {
-        continue;
-      }
-
-      const correctedText = cleanTextBasic(String(item.correctedText ?? ""));
-      byPlayerId.set(item.playerId, {
-        playerId: item.playerId,
-        correctedText,
-        isAutoGenerated: Boolean(item.isAutoGenerated),
-      });
-    }
-
-    return entries.map((entry) => {
-      const candidate = byPlayerId.get(entry.playerId);
-      if (!candidate || !candidate.correctedText) {
-        return fallback.find((f) => f.playerId === entry.playerId) as DefinitionBatchOutput;
-      }
-
-      if (!entry.rawDefinition?.trim()) {
-        return {
-          playerId: entry.playerId,
-          correctedText: candidate.correctedText,
-          isAutoGenerated: true,
-        };
-      }
-
-      const safe = keepOriginalOrderAndCount(entry.rawDefinition, candidate.correctedText);
-      if (!safe) {
-        return {
-          playerId: entry.playerId,
-          correctedText: localCorrectionFallback(entry.rawDefinition),
-          isAutoGenerated: false,
-        };
-      }
-
-      return {
-        playerId: entry.playerId,
-        correctedText: candidate.correctedText,
-        isAutoGenerated: false,
-      };
-    });
-  } catch {
-    return fallback;
-  }
 }

@@ -62,6 +62,27 @@ export class RoomManager {
     room.updatedAt = now();
   }
 
+  private setRoomError(room: InternalRoom, message: string): void {
+    this.clearTimer(room);
+    room.phase = "ERROR";
+    room.errorMessage = message;
+    room.isFinalizingWriting = false;
+    room.isFinalizingVoting = false;
+
+    if (room.round) {
+      room.round.phaseStartedAt = now();
+      room.round.phaseEndsAt = null;
+    }
+
+    this.touchRoom(room);
+    this.broadcast(room.code);
+  }
+
+  private formatAiError(prefix: string, error: unknown): string {
+    const detail = error instanceof Error ? error.message.trim() : "";
+    return detail ? `${prefix} ${detail}` : prefix;
+  }
+
   private removeRoomIfEmpty(room: InternalRoom): void {
     if (room.players.size > 0) {
       return;
@@ -151,6 +172,7 @@ export class RoomManager {
     return {
       code: room.code,
       phase: room.phase,
+      errorMessage: room.errorMessage,
       hostId: room.hostId,
       players: this.getPublicPlayers(room),
       settings: room.settings,
@@ -261,6 +283,7 @@ export class RoomManager {
         ],
       ]),
       phase: "LOBBY",
+      errorMessage: null,
       settings: { ...DEFAULT_SETTINGS },
       round: null,
       roundTimeout: null,
@@ -373,7 +396,11 @@ export class RoomManager {
     this.cleanupRoundStateForPlayer(room, session.playerId);
     this.ensureHost(room);
 
-    if (room.players.size < room.settings.minPlayers && room.phase !== "LOBBY") {
+    if (
+      room.players.size < room.settings.minPlayers &&
+      room.phase !== "LOBBY" &&
+      room.phase !== "ERROR"
+    ) {
       this.clearTimer(room);
       room.phase = "FINAL_RESULTS";
       if (room.round) {
@@ -424,14 +451,29 @@ export class RoomManager {
   private async prepareNewRound(room: InternalRoom): Promise<void> {
     room.currentRoundNumber += 1;
     const roundNumber = room.currentRoundNumber;
-    const generated = await generateRoundWord(roundNumber, [...room.usedWords]);
-    room.usedWords.add(generated.word.toLocaleLowerCase("fr-FR"));
+    let generatedWord: string;
+    let generatedDefinition: string;
+
+    try {
+      const generated = await generateRoundWord(roundNumber, [...room.usedWords]);
+      generatedWord = generated.word;
+      generatedDefinition = generated.correctDefinition;
+    } catch (error) {
+      room.currentRoundNumber -= 1;
+      this.setRoomError(
+        room,
+        this.formatAiError("Erreur IA pendant la génération du mot de manche.", error),
+      );
+      return;
+    }
+
+    room.usedWords.add(generatedWord.toLocaleLowerCase("fr-FR"));
     const phaseStartedAt = now();
 
     const round: InternalRoundState = {
       roundNumber,
-      word: generated.word,
-      correctDefinition: generated.correctDefinition,
+      word: generatedWord,
+      correctDefinition: generatedDefinition,
       correctOptionId: `correct-${roundNumber}`,
       definitionsByPlayerId: new Map<string, PlayerRoundDefinition>(),
       options: [],
@@ -443,6 +485,7 @@ export class RoomManager {
 
     room.round = round;
     room.phase = "WRITING";
+    room.errorMessage = null;
     room.isFinalizingWriting = false;
     room.isFinalizingVoting = false;
     this.touchRoom(room);
@@ -469,6 +512,7 @@ export class RoomManager {
 
     room.currentRoundNumber = 0;
     room.round = null;
+    room.errorMessage = null;
     room.usedWords.clear();
     await this.prepareNewRound(room);
 
@@ -538,11 +582,23 @@ export class RoomManager {
         rawDefinition: round.definitionsByPlayerId.get(player.id)?.rawDefinition,
       }));
 
-      const normalized = await normalizeAndFillDefinitions(
-        round.word,
-        round.correctDefinition,
-        inputs,
-      );
+      let normalized;
+      try {
+        normalized = await normalizeAndFillDefinitions(
+          round.word,
+          round.correctDefinition,
+          inputs,
+        );
+      } catch (error) {
+        this.setRoomError(
+          room,
+          this.formatAiError(
+            "Erreur IA pendant la normalisation des définitions.",
+            error,
+          ),
+        );
+        return;
+      }
 
       if (!room.round || room.phase !== "WRITING" || room.round.roundNumber !== expectedRound) {
         return;
@@ -715,6 +771,7 @@ export class RoomManager {
     room.round = null;
     room.usedWords.clear();
     room.phase = "LOBBY";
+    room.errorMessage = null;
     room.isFinalizingWriting = false;
     room.isFinalizingVoting = false;
 
