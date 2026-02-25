@@ -7,6 +7,18 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-game-bg-start: var(--game-bg-start);
+  --color-game-bg-end: var(--game-bg-end);
+  --color-game-surface: var(--game-surface);
+  --color-game-surface-strong: var(--game-surface-strong);
+  --color-game-accent-soft: var(--game-accent-soft);
+  --color-game-accent-soft-foreground: var(--game-accent-soft-foreground);
+  --color-game-info-soft: var(--game-info-soft);
+  --color-game-info-soft-foreground: var(--game-info-soft-foreground);
+  --color-game-success-soft: var(--game-success-soft);
+  --color-game-success-soft-foreground: var(--game-success-soft-foreground);
+  --color-game-danger-soft: var(--game-danger-soft);
+  --color-game-danger-soft-foreground: var(--game-danger-soft-foreground);
   --font-sans: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Menlo", "Monaco", "Courier New", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -55,7 +67,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.64 0.16 48);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -80,6 +92,18 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --game-bg-start: oklch(0.97 0.03 82);
+  --game-bg-end: oklch(0.92 0.06 58);
+  --game-surface: oklch(1 0 0 / 72%);
+  --game-surface-strong: oklch(1 0 0 / 82%);
+  --game-accent-soft: oklch(0.91 0.06 62);
+  --game-accent-soft-foreground: oklch(0.5 0.12 54);
+  --game-info-soft: oklch(0.92 0.05 232);
+  --game-info-soft-foreground: oklch(0.47 0.09 236);
+  --game-success-soft: oklch(0.92 0.07 154);
+  --game-success-soft-foreground: oklch(0.46 0.09 154);
+  --game-danger-soft: oklch(0.93 0.06 26);
+  --game-danger-soft-foreground: oklch(0.5 0.12 26);
 }
 
 .dark {
@@ -89,8 +113,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.74 0.12 58);
+  --primary-foreground: oklch(0.24 0.01 55);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -114,6 +138,18 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --game-bg-start: oklch(0.25 0.02 72);
+  --game-bg-end: oklch(0.19 0.03 56);
+  --game-surface: oklch(0.23 0.01 20 / 78%);
+  --game-surface-strong: oklch(0.27 0.01 20 / 88%);
+  --game-accent-soft: oklch(0.35 0.06 60);
+  --game-accent-soft-foreground: oklch(0.9 0.03 62);
+  --game-info-soft: oklch(0.34 0.05 234);
+  --game-info-soft-foreground: oklch(0.9 0.02 232);
+  --game-success-soft: oklch(0.35 0.06 158);
+  --game-success-soft-foreground: oklch(0.9 0.03 158);
+  --game-danger-soft: oklch(0.34 0.06 26);
+  --game-danger-soft-foreground: oklch(0.9 0.03 26);
 }
 
 @layer base {

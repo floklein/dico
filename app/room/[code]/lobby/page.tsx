@@ -135,15 +135,15 @@ export default function LobbyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-100 px-4 py-6 text-zinc-900">
+    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-6 text-foreground">
       <div className="mx-auto w-full max-w-md space-y-4">
-        <header className="rounded-2xl bg-white/70 px-4 py-3">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Lobby</p>
-          <h1 className="mt-1 text-3xl font-black text-orange-900">{roomCode || "...."}</h1>
-          <p className="mt-1 text-sm text-zinc-700">Attends les joueurs puis lance la partie</p>
+        <header className="rounded-2xl bg-game-surface px-4 py-3">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-game-accent-soft-foreground">Lobby</p>
+          <h1 className="mt-1 text-3xl font-black text-primary">{roomCode || "...."}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Attends les joueurs puis lance la partie</p>
         </header>
 
-        <section className="rounded-2xl bg-white/80 px-4 py-3 text-sm text-zinc-700">
+        <section className="rounded-2xl bg-game-surface-strong px-4 py-3 text-sm text-muted-foreground">
           <p>
             Vous êtes: <strong>{me?.name ?? session?.playerName ?? "..."}</strong>
           </p>
@@ -159,13 +159,13 @@ export default function LobbyPage() {
           {(snapshot?.players ?? []).map((player) => (
             <li
               key={player.id}
-              className="flex items-center justify-between rounded-xl bg-white/80 px-4 py-3"
+              className="flex items-center justify-between rounded-xl bg-game-surface-strong px-4 py-3"
             >
-              <span className="font-semibold text-zinc-800">
+              <span className="font-semibold text-foreground">
                 {player.name}
                 {player.id === session?.playerId ? " (vous)" : ""}
               </span>
-              <span className="text-xs font-bold uppercase tracking-[0.12em] text-orange-700">
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-game-accent-soft-foreground">
                 {player.isHost ? "Hôte" : "Joueur"}
               </span>
             </li>
@@ -177,7 +177,7 @@ export default function LobbyPage() {
             type="button"
             onClick={handleStart}
             disabled={!me?.isHost || pendingAction !== null || (snapshot?.players.length ?? 0) < 2}
-            className="w-full rounded-xl bg-orange-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-primary px-4 py-3 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === "start" ? "Démarrage..." : "Démarrer la partie"}
           </button>
@@ -185,14 +185,14 @@ export default function LobbyPage() {
             type="button"
             onClick={handleLeave}
             disabled={pendingAction !== null}
-            className="w-full rounded-xl bg-zinc-100 px-4 py-3 text-base font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-secondary px-4 py-3 text-base font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Quitter le salon
           </button>
         </div>
 
         {error || streamError ? (
-          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
             {error ?? streamError}
           </p>
         ) : null}
