@@ -15,99 +15,46 @@ export default function OpenGraphImage(): ImageResponse {
           width: "100%",
           height: "100%",
           display: "flex",
-          position: "relative",
-          background:
-            "linear-gradient(135deg, rgb(255, 237, 213) 0%, rgb(254, 215, 170) 45%, rgb(251, 146, 60) 100%)",
-          color: "rgb(67, 20, 7)",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 28,
+          background: "linear-gradient(180deg, #fffbeb 0%, #ffedd5 100%)",
+          color: "#7c2d12",
           fontFamily: "Avenir Next, Segoe UI, Arial, sans-serif",
         }}
       >
-        <div
+        <svg
+          width="128"
+          height="128"
+          viewBox="0 0 64 64"
           style={{
-            position: "absolute",
-            inset: "48px",
-            borderRadius: "36px",
-            background: "rgba(255, 255, 255, 0.72)",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "44px 52px",
+            flexShrink: 0,
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-              }}
-            >
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  background: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
-                }}
-              />
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 30,
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "rgb(146, 64, 14)",
-                }}
-              >
-                Le jeu du Dico
-              </p>
-            </div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 78,
-                lineHeight: 1.03,
-                fontWeight: 900,
-              }}
-            >
-              Bluffe sur des definitions
-            </h1>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 34,
-                lineHeight: 1.2,
-                color: "rgb(120, 53, 15)",
-              }}
-            >
-              Ecris, vote et gagne dans ce jeu multijoueur en francais
-            </p>
-          </div>
+          <defs>
+            <linearGradient id="dico-og-bg" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#F59E0B" />
+              <stop offset="1" stopColor="#EA580C" />
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#dico-og-bg)" />
+          <rect x="18" y="14" width="4" height="36" rx="2" fill="#7C2D12" opacity="0.45" />
+          <path d="M24 18H38C44.6274 18 50 23.3726 50 30V34C50 40.6274 44.6274 46 38 46H24V18Z" fill="white" opacity="0.96" />
+          <path d="M31 42C37.0751 42 42 37.0751 42 31C42 24.9249 37.0751 20 31 20H24V42H31Z" fill="#FFEDD5" />
+          <path d="M30 25C33.866 25 37 28.134 37 32C37 35.866 33.866 39 30 39H27V25H30Z" fill="#EA580C" />
+        </svg>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              fontSize: 28,
-              fontWeight: 700,
-              color: "rgb(154, 52, 18)",
-            }}
-          >
-            <span>5 manches</span>
-            <span>•</span>
-            <span>Temps reel</span>
-            <span>•</span>
-            <span>Mobile first</span>
-          </div>
-        </div>
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 92,
+            lineHeight: 1,
+            fontWeight: 900,
+          }}
+        >
+          Le jeu du Dico
+        </h1>
       </div>
     ),
     {
