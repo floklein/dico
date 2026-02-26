@@ -28,8 +28,8 @@ interface Subscriber {
 
 const DEFAULT_SETTINGS: GameSettings = {
   totalRounds: 5,
-  writingDurationSec: 45,
-  votingDurationSec: 20,
+  writingDurationSec: 60,
+  votingDurationSec: 30,
   minPlayers: 2,
   maxPlayers: 8,
 };
