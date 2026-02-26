@@ -22,6 +22,11 @@ function routeForPhase(code: string, phase: RoomState["phase"]): string {
   return `/room/${code}/game`;
 }
 
+function getPlayerOptionOwnerId(optionId: string): string | null {
+  const match = optionId.match(/^player-\d+-(.+)$/);
+  return match?.[1] ?? null;
+}
+
 export default function GamePage() {
   const router = useRouter();
   const params = useParams<{ code: string }>();
@@ -119,12 +124,10 @@ export default function GamePage() {
       snapshot.round.roundNumber >= snapshot.settings.totalRounds,
   );
 
-  const currentPlayerDefinitionOptionId = useMemo(() => {
-    if (!snapshot?.round || !session?.playerId) {
-      return null;
-    }
-    return `player-${snapshot.round.roundNumber}-${session.playerId}`;
-  }, [session?.playerId, snapshot?.round]);
+  const playerNameById = useMemo(
+    () => new Map((snapshot?.players ?? []).map((player) => [player.id, player.name])),
+    [snapshot?.players],
+  );
 
   useEffect(() => {
     if (snapshot?.phase === "WRITING") {
@@ -324,26 +327,44 @@ export default function GamePage() {
               {(snapshot.round?.options ?? []).map((option) => (
                 (() => {
                   const isCorrect = option.id === snapshot.round?.correctOptionId;
-                  const isCurrentPlayerDefinition =
-                    option.id === currentPlayerDefinitionOptionId;
+                  const isCurrentPlayerVote = option.id === snapshot.round?.votedOptionId;
+                  const ownerPlayerId = getPlayerOptionOwnerId(option.id);
 
-                  const optionClassName = isCorrect
-                    ? "bg-game-success-soft text-game-success-soft-foreground"
-                    : isCurrentPlayerDefinition
-                      ? "bg-game-danger-soft text-game-danger-soft-foreground"
-                      : "bg-background";
+                  const optionClassName = isCurrentPlayerVote
+                    ? isCorrect
+                      ? "bg-game-success-soft text-game-success-soft-foreground"
+                      : "bg-game-danger-soft text-game-danger-soft-foreground"
+                    : "bg-background";
+
+                  const authorLabel = ownerPlayerId
+                    ? ownerPlayerId === session?.playerId
+                      ? "Vous"
+                      : playerNameById.get(ownerPlayerId) ?? "Joueur inconnu"
+                    : "Dictionnaire";
 
                   return (
                     <div
                       key={option.id}
                       className={`rounded-xl px-3 py-2 text-sm ${optionClassName}`}
                     >
-                      {option.text}
-                      {isCurrentPlayerDefinition ? (
-                        <span className="ml-2 text-xs font-bold uppercase tracking-[0.12em]">
-                          {isCorrect ? "votre réponse (juste)" : "votre réponse"}
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold uppercase tracking-[0.12em] opacity-90">
+                          {authorLabel}
                         </span>
-                      ) : null}
+                        <div className="flex items-center gap-1">
+                          {isCurrentPlayerVote ? (
+                            <span className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-90">
+                              Votre vote
+                            </span>
+                          ) : null}
+                          {isCorrect ? (
+                            <span className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-90">
+                              Correct
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                      {option.text}
                     </div>
                   );
                 })()
