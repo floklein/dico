@@ -142,45 +142,45 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-6 text-foreground">
-      <div className="mx-auto w-full max-w-md space-y-4">
-        <header className="rounded-2xl bg-game-surface px-4 py-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-game-accent-soft-foreground">
-            Partie terminée
-          </p>
-          <h1 className="mt-1 text-3xl font-black text-primary">Résultats finaux</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {winners.length > 1
-              ? `Égalité: ${winners.map((player) => player.name).join(", ")}`
-              : `Vainqueur: ${winners[0]?.name ?? "-"}`}
-          </p>
-        </header>
+    <main className="min-h-dvh bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-6 text-foreground">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-md flex-col">
+        <div className="space-y-4">
+          <header className="rounded-2xl bg-game-surface px-4 py-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-game-accent-soft-foreground">
+              Partie terminée
+            </p>
+            <h1 className="mt-1 text-3xl font-black text-primary">Résultats finaux</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {winners.length > 1
+                ? `Égalité: ${winners.map((player) => player.name).join(", ")}`
+                : `Vainqueur: ${winners[0]?.name ?? "-"}`}
+            </p>
+          </header>
 
-        <ul className="space-y-2">
-          {sortedPlayers.map((player, index) => {
-            const isCurrentPlayer = player.id === session?.playerId;
+          <ul className="space-y-2">
+            {sortedPlayers.map((player, index) => {
+              const isCurrentPlayer = player.id === session?.playerId;
 
-            return (
-              <li
-                  key={player.id}
-                  className={`flex items-center justify-between rounded-xl px-4 py-3 ${
-                    isCurrentPlayer
-                    ? "bg-game-accent-soft"
-                    : "bg-game-surface-strong"
-                }`}
-              >
-                <span className="text-sm font-semibold text-foreground">
-                  #{index + 1} {player.name}
-                  {isCurrentPlayer ? " (vous)" : ""}
-                  {player.isHost ? " · hôte" : ""}
-                </span>
-                <span className="text-sm font-black text-primary">{player.score} pts</span>
-              </li>
-            );
-          })}
-        </ul>
+              return (
+                <li
+                    key={player.id}
+                    className={`flex items-center justify-between rounded-xl px-4 py-3 ${
+                      isCurrentPlayer
+                      ? "bg-game-accent-soft"
+                      : "bg-game-surface-strong"
+                  }`}
+                >
+                  <span className="text-sm font-semibold text-foreground">
+                    #{index + 1} {player.name}
+                    {isCurrentPlayer ? " (vous)" : ""}
+                    {player.isHost ? " · hôte" : ""}
+                  </span>
+                  <span className="text-sm font-black text-primary">{player.score} pts</span>
+                </li>
+              );
+            })}
+          </ul>
 
-        <div className="space-y-2">
           <button
             type="button"
             onClick={handleReplay}
@@ -189,21 +189,22 @@ export default function ResultsPage() {
           >
             {pendingAction === "replay" ? "Relance..." : "Rejouer"}
           </button>
-          <button
-            type="button"
-            onClick={handleLeave}
-            disabled={pendingAction !== null}
-            className="w-full rounded-xl bg-secondary px-4 py-3 text-base font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Quitter
-          </button>
+
+          {error || streamError ? (
+            <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
+              {error ?? streamError}
+            </p>
+          ) : null}
         </div>
 
-        {error || streamError ? (
-          <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
-            {error ?? streamError}
-          </p>
-        ) : null}
+        <button
+          type="button"
+          onClick={handleLeave}
+          disabled={pendingAction !== null}
+          className="mt-auto w-full rounded-xl bg-secondary px-4 py-3 text-base font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Quitter
+        </button>
       </div>
     </main>
   );

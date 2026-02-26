@@ -119,7 +119,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-8 text-foreground">
+    <main className="min-h-dvh bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-8 text-foreground">
       <div className="mx-auto w-full max-w-md space-y-4">
         <header className="rounded-2xl bg-game-surface px-4 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-game-accent-soft-foreground">

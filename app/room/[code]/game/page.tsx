@@ -231,16 +231,17 @@ export default function GamePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-5 text-foreground">
-      <div className="mx-auto w-full max-w-xl space-y-3">
-        <header className="flex items-center justify-between gap-3 rounded-2xl bg-game-surface-strong px-4 py-3">
+    <main className="min-h-dvh bg-gradient-to-b from-game-bg-start to-game-bg-end px-4 py-5 text-foreground">
+      <div className="mx-auto flex min-h-[calc(100dvh-2.5rem)] w-full max-w-xl flex-col">
+        <div className="space-y-3">
+          <header className="flex items-center justify-between gap-3 rounded-2xl bg-game-surface-strong px-4 py-3">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-game-accent-soft-foreground">
             Manche {snapshot?.round?.roundNumber ?? "..."}/{snapshot?.settings.totalRounds ?? 5} · Salon {roomCode}
           </p>
           <div className="rounded-full bg-game-accent-soft px-3 py-1 text-sm font-black text-game-accent-soft-foreground">
             {secondsLeft ?? "--"}s
           </div>
-        </header>
+          </header>
 
         {snapshot?.round?.word ? (
           <section className="rounded-2xl bg-game-surface px-4 py-4 text-center">
@@ -269,7 +270,7 @@ export default function GamePage() {
               maxLength={280}
               rows={4}
               placeholder="Votre définition..."
-              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground outline-none ring-ring focus:ring-2"
+              className="w-full rounded-xl border border-input bg-background px-3 py-2 text-base text-foreground outline-none ring-ring focus:ring-2"
             />
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-accent-soft-foreground">
@@ -424,20 +425,21 @@ export default function GamePage() {
           </section>
         ) : null}
 
-        <button
-          type="button"
-          onClick={handleLeave}
-          disabled={pendingAction !== null}
-          className="w-full rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          Quitter la partie
-        </button>
-
         {error || streamError ? (
           <p className="rounded-xl bg-game-danger-soft px-3 py-2 text-sm text-game-danger-soft-foreground">
             {error ?? streamError}
           </p>
         ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleLeave}
+          disabled={pendingAction !== null}
+          className="mt-auto w-full rounded-xl bg-secondary px-4 py-3 text-sm font-semibold text-secondary-foreground transition hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Quitter la partie
+        </button>
       </div>
     </main>
   );
