@@ -279,7 +279,7 @@ export default function GamePage() {
             />
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-accent-soft-foreground">
-                Soumissions: {snapshot.round?.submittedCount ?? 0}/{snapshot.players.length}
+                Soumissions : {snapshot.round?.submittedCount ?? 0}/{snapshot.players.length}
               </p>
               <button
                 type="button"
@@ -332,7 +332,7 @@ export default function GamePage() {
               })}
             </div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-info-soft-foreground">
-              Votes: {snapshot.round?.votedCount ?? 0}/{snapshot.players.length}
+              Votes : {snapshot.round?.votedCount ?? 0}/{snapshot.players.length}
             </p>
           </section>
         ) : null}

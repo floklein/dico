@@ -152,8 +152,8 @@ export default function ResultsPage() {
             <h1 className="mt-1 text-3xl font-black text-primary">Résultats finaux</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {winners.length > 1
-                ? `Égalité: ${winners.map((player) => player.name).join(", ")}`
-                : `Vainqueur: ${winners[0]?.name ?? "-"}`}
+                ? `Égalité : ${winners.map((player) => player.name).join(", ")}`
+                : `Vainqueur : ${winners[0]?.name ?? "-"}`}
             </p>
           </header>
 
