@@ -137,7 +137,7 @@ export default function HomePage() {
             <input
               value={playerName}
               onChange={(event) => setPlayerName(event.target.value)}
-              placeholder="Ex: Camille"
+              placeholder="Ex. : Camille"
               maxLength={32}
               className="w-full rounded-xl border border-input bg-background px-4 py-3 text-base text-foreground outline-none ring-ring transition focus:ring-2"
             />

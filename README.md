@@ -1,83 +1,102 @@
 # Le jeu du Dico
 
-MVP mobile-first multijoueur en francais avec Next.js (App Router), SSE + HTTP, et etat des parties en memoire serveur.
+Jeu multijoueur mobile-first, construit avec Next.js (App Router), API HTTP + SSE, et état de partie en mémoire serveur.
 
-## Stack
+## Fonctionnalités
 
-- Next.js 16 + React 19
-- Etat de partie en RAM (processus Node unique)
-- Temps reel via SSE (`/api/rooms/[code]/events`)
-- IA via Vercel AI Gateway (modele par defaut: `openai/gpt-5.2`)
+- Création/rejoindre un salon par code (`4` lettres)
+- Reconnexion par session locale (`playerId` + `sessionToken`)
+- Flux temps réel via Server-Sent Events
+- Manches avec mot/définition correcte générés par IA
+- Normalisation des définitions joueurs en batch (orthographe/ponctuation) avec garde-fous anti-paraphrase
+
+## Stack technique
+
+- Next.js `16` + React `19`
+- État des salons en RAM (process Node unique)
+- SSE sur `GET /api/rooms/[code]/events`
+- Vercel AI Gateway (modèle par défaut : `openai/gpt-5.2`)
+- Vitest pour la logique de jeu serveur
 
 ## Setup local
 
-1. Installer les dependances:
+1. Installer les dépendances.
 
 ```bash
 npm install
 ```
 
-2. Configurer l'environnement:
+2. Configurer l'environnement.
 
 ```bash
 cp .env.example .env.local
 ```
 
-Puis renseigner au minimum:
+Variables :
 
-- `VERCEL_AI_GATEWAY_API_KEY`
-- `LLM_MODEL` (optionnel, defaut `openai/gpt-5.2`)
+- `VERCEL_AI_GATEWAY_API_KEY` (requis)
+- `LLM_MODEL` (optionnel, défaut : `openai/gpt-5.2`)
 
-3. Lancer l'app:
+3. Lancer en local.
 
 ```bash
 npm run dev
 ```
 
-App disponible sur `http://localhost:3000`.
+Application disponible sur `http://localhost:3000`.
 
 ## Scripts
 
-- `npm run dev` lance le serveur de dev
-- `npm test` lance les tests Vitest (mode CI)
-- `npm run test:watch` lance les tests Vitest en mode watch
+- `npm run dev` démarre le serveur de dev
+- `npm run build` build de production
+- `npm run start` démarre le build de production
 - `npm run lint` lance ESLint
-- `npm run build` build production
-- `npm run start` lance le build en mode prod
+- `npm test` lance Vitest en mode CI
+- `npm run test:watch` lance Vitest en mode watch
 
-## Regles MVP (actuelles)
+## Règles de jeu (actuelles dans le code)
 
-- 5 manches, min 2 joueurs, max 8
-- Ecriture: 45s
-- Vote: 20s
-- Score: `+2` si vote correct, `+1` par vote recu sur sa definition
-- Defs anonymes et melangees, auto-vote interdit
-- Si pas de soumission: definition auto-generee
-- Si pas de vote: 0 point
-- Reconnexion joueur geree par session (`playerId` + `sessionToken`)
+- 5 manches par partie
+- 2 joueurs minimum, 8 maximum
+- Phase écriture : `60s`
+- Phase vote : `30s`
+- `+2` points pour un vote sur la vraie définition
+- `+1` point par vote reçu sur sa définition
+- Auto-vote interdit
+- Si un joueur ne soumet rien : fausse définition auto-générée
+- Si un joueur ne vote pas : aucun point
+- Le passage à la manche suivante est déclenché par l'hôte (`next-round`)
 
-## IA et definitions
+## Contrat API (résumé)
 
-- Generation du mot difficile + vraie definition au debut de manche
-- Normalisation batch des definitions joueurs en 1 call IA par manche (nominal):
-  - correction orthographe, accents, apostrophes, casse et ponctuation
-  - pas de reformulation (garde-fous serveur anti-paraphrase)
-- Style de la vraie definition: court, naturel, sans point final
+Toutes les réponses API utilisent le format :
 
-## Endpoints API
+- succès : `{ "ok": true, "data": ... }`
+- erreur : `{ "ok": false, "error": "..." }`
+
+Endpoints :
 
 - `POST /api/rooms`
+  - body : `{ "playerName": string }`
 - `POST /api/rooms/[code]/join`
-- `GET /api/rooms/[code]/snapshot`
-- `GET /api/rooms/[code]/events`
+  - body : `{ "playerName": string, "playerId"?: string, "sessionToken"?: string }`
+- `GET /api/rooms/[code]/snapshot?playerId=...`
+- `GET /api/rooms/[code]/events?playerId=...`
 - `POST /api/rooms/[code]/start`
+  - body : `{ "playerId": string, "sessionToken": string }`
 - `POST /api/rooms/[code]/submit`
+  - body : `{ "playerId": string, "sessionToken": string, "definition": string }`
 - `POST /api/rooms/[code]/vote`
+  - body : `{ "playerId": string, "sessionToken": string, "optionId": string }`
 - `POST /api/rooms/[code]/next-round`
+  - body : `{ "playerId": string, "sessionToken": string }`
 - `POST /api/rooms/[code]/play-again`
+  - body : `{ "playerId": string, "sessionToken": string }`
 - `POST /api/rooms/[code]/leave`
+  - body : `{ "playerId": string, "sessionToken": string }`
 
-## Notes de deploiement
+## Limites actuelles
 
-- Ce MVP suppose un seul processus Node actif.
-- L'etat n'est pas persiste en base: redemarrage serveur = parties perdues.
+- État en mémoire uniquement : redémarrage serveur = salons perdus
+- Aucune persistance en base de données
+- Conçu pour une seule instance serveur (pas de scaling horizontal sans store partagé)

@@ -60,7 +60,7 @@ beforeEach(() => {
 
   mockedGenerateRoundWord.mockResolvedValue({
     word: "Hypallage",
-    correctDefinition: "On donne a un mot une qualite qui va normalement a un autre",
+    correctDefinition: "On donne à un mot une qualité qui va normalement à un autre",
   });
 
   mockedNormalizeAndFillDefinitions.mockImplementation(

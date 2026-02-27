@@ -24,7 +24,7 @@ describe("AI gateway JSON mode fallback", () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            choices: [{ message: { content: '{"word":"argousin","correctDefinition":"vieux terme d argot pour un agent de police"}' } }],
+            choices: [{ message: { content: "{\"word\":\"argousin\",\"correctDefinition\":\"vieux terme d'argot pour un agent de police\"}" } }],
           }),
           { status: 200 },
         ),
@@ -35,7 +35,7 @@ describe("AI gateway JSON mode fallback", () => {
     const result = await generateRoundWord(1, []);
 
     expect(result.word).toBe("Argousin");
-    expect(result.correctDefinition).toBe("Vieux terme d argot pour un agent de police");
+    expect(result.correctDefinition).toBe("Vieux terme d'argot pour un agent de police");
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     const firstPayload = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));

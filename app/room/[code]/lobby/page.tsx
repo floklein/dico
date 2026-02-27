@@ -146,13 +146,13 @@ export default function LobbyPage() {
 
           <section className="rounded-2xl bg-game-surface-strong px-4 py-3 text-sm text-muted-foreground">
             <p>
-              Vous êtes: <strong>{me?.name ?? session?.playerName ?? "..."}</strong>
+              Vous êtes : <strong>{me?.name ?? session?.playerName ?? "..."}</strong>
             </p>
             <p>
-              Hôte: <strong>{snapshot?.players.find((p) => p.isHost)?.name ?? "..."}</strong>
+              Hôte : <strong>{snapshot?.players.find((p) => p.isHost)?.name ?? "..."}</strong>
             </p>
             <p>
-              Joueurs: <strong>{snapshot?.players.length ?? 0}</strong> / {snapshot?.settings.maxPlayers ?? 8}
+              Joueurs : <strong>{snapshot?.players.length ?? 0}</strong> / {snapshot?.settings.maxPlayers ?? 8}
             </p>
           </section>
 
