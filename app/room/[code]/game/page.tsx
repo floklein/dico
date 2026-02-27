@@ -348,16 +348,12 @@ export default function GamePage() {
                       key={option.id}
                       className={`rounded-xl px-3 py-2 text-sm ${optionClassName}`}
                     >
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] opacity-90">
-                          {authorLabel}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          {isCurrentPlayerVote ? (
-                            <span className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-90">
-                              Votre vote
-                            </span>
-                          ) : null}
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="flex-1 text-left">{option.text}</p>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <span className="text-xs font-bold uppercase tracking-[0.12em] opacity-90">
+                            {authorLabel}
+                          </span>
                           {isCorrect ? (
                             <span className="text-[11px] font-bold uppercase tracking-[0.1em] opacity-90">
                               Correct
@@ -365,7 +361,6 @@ export default function GamePage() {
                           ) : null}
                         </div>
                       </div>
-                      {option.text}
                     </div>
                   );
                 })()
