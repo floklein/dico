@@ -164,6 +164,11 @@ export default function GamePage() {
       return;
     }
 
+    if (getPlayerOptionOwnerId(optionId) === session.playerId) {
+      setError("Vous ne pouvez pas voter pour votre propre définition.");
+      return;
+    }
+
     setPendingAction("vote");
     setError(null);
 
@@ -298,22 +303,33 @@ export default function GamePage() {
               Votez pour la définition que vous pensez correcte
             </p>
             <div className="space-y-2">
-              {(snapshot.round?.options ?? []).map((option, index) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => handleVote(option.id)}
-                  disabled={pendingAction !== null}
-                  className={`w-full rounded-xl px-3 py-2 text-left text-sm transition ${
-                    snapshot.round?.votedOptionId === option.id
-                      ? "bg-game-accent-soft"
-                      : "bg-background hover:bg-game-info-soft"
-                  } disabled:cursor-not-allowed disabled:opacity-60`}
-                >
-                  <span className="mr-2 font-bold text-game-info-soft-foreground">{index + 1}.</span>
-                  {option.text}
-                </button>
-              ))}
+              {(snapshot.round?.options ?? []).map((option, index) => {
+                const isOwnDefinition = getPlayerOptionOwnerId(option.id) === session?.playerId;
+
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => handleVote(option.id)}
+                    disabled={pendingAction !== null || isOwnDefinition}
+                    className={`w-full rounded-xl px-3 py-2 text-left text-sm transition ${
+                      snapshot.round?.votedOptionId === option.id
+                        ? "bg-game-accent-soft"
+                        : "bg-background hover:bg-game-info-soft"
+                    } disabled:cursor-not-allowed disabled:opacity-60`}
+                  >
+                    <span className="mr-2 font-bold text-game-info-soft-foreground">
+                      {index + 1}.
+                    </span>
+                    {option.text}
+                    {isOwnDefinition ? (
+                      <span className="ml-2 text-xs font-semibold text-muted-foreground">
+                        (Votre définition)
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-game-info-soft-foreground">
               Votes: {snapshot.round?.votedCount ?? 0}/{snapshot.players.length}
