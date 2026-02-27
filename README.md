@@ -51,7 +51,7 @@ App disponible sur `http://localhost:3000`.
 - Ecriture: 45s
 - Vote: 20s
 - Score: `+2` si vote correct, `+1` par vote recu sur sa definition
-- Defs anonymes et melangees, auto-vote autorise
+- Defs anonymes et melangees, auto-vote interdit
 - Si pas de soumission: definition auto-generee
 - Si pas de vote: 0 point
 - Reconnexion joueur geree par session (`playerId` + `sessionToken`)

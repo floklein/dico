@@ -656,9 +656,16 @@ export class RoomManager {
       throw new Error("Ce n'est pas la phase de vote.");
     }
 
-    const optionExists = room.round.options.some((option) => option.id === optionId);
-    if (!optionExists) {
+    const selectedOption = room.round.options.find((option) => option.id === optionId);
+    if (!selectedOption) {
       throw new Error("Option de vote invalide.");
+    }
+
+    if (
+      selectedOption.source === "player" &&
+      selectedOption.ownerPlayerId === session.playerId
+    ) {
+      throw new Error("Vous ne pouvez pas voter pour votre propre définition.");
     }
 
     room.round.votesByPlayerId.set(session.playerId, optionId);
@@ -714,6 +721,10 @@ export class RoomManager {
         }
 
         if (votedOption.source === "player" && votedOption.ownerPlayerId) {
+          if (votedOption.ownerPlayerId === voterPlayerId) {
+            continue;
+          }
+
           const owner = room.players.get(votedOption.ownerPlayerId);
           if (owner) {
             owner.score += 1;

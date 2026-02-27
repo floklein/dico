@@ -47,6 +47,14 @@ async function flushAsyncWork(): Promise<void> {
   await Promise.resolve();
 }
 
+function getCorrectOptionId(roundNumber: number): string {
+  return `correct-${roundNumber}`;
+}
+
+function getPlayerOptionId(roundNumber: number, playerId: string): string {
+  return `player-${roundNumber}-${playerId}`;
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
 
@@ -111,11 +119,12 @@ describe("RoomManager leave flow", () => {
     const votingSnapshot = await manager.submitDefinition(roomCode, bobSession, "Definition bob");
 
     expect(votingSnapshot.phase).toBe("VOTING");
-    const selectedOptionId = votingSnapshot.round?.options[0]?.id;
-    expect(selectedOptionId).toBeTruthy();
+    const roundNumber = votingSnapshot.round?.roundNumber;
+    expect(roundNumber).toBeTruthy();
+    const selectedOptionId = getCorrectOptionId(roundNumber as number);
 
-    manager.vote(roomCode, hostSession, selectedOptionId as string);
-    manager.vote(roomCode, aliceSession, selectedOptionId as string);
+    manager.vote(roomCode, hostSession, selectedOptionId);
+    manager.vote(roomCode, aliceSession, selectedOptionId);
 
     const leaveSnapshot = manager.leaveRoom(roomCode, bobSession);
     expect(leaveSnapshot?.phase).toBe("ROUND_RESULTS");
@@ -130,7 +139,9 @@ describe("RoomManager leave flow", () => {
     await manager.submitDefinition(roomCode, hostSession, "Definition host");
     await manager.submitDefinition(roomCode, aliceSession, "Definition alice");
     const votingSnapshot = await manager.submitDefinition(roomCode, bobSession, "Definition bob");
-    const selectedOptionId = votingSnapshot.round?.options[0]?.id as string;
+    const roundNumber = votingSnapshot.round?.roundNumber;
+    expect(roundNumber).toBeTruthy();
+    const selectedOptionId = getCorrectOptionId(roundNumber as number);
 
     manager.vote(roomCode, hostSession, selectedOptionId);
     manager.vote(roomCode, bobSession, selectedOptionId);
@@ -139,6 +150,26 @@ describe("RoomManager leave flow", () => {
     expect(leaveSnapshot?.phase).toBe("VOTING");
     expect(leaveSnapshot?.players).toHaveLength(2);
     expect(leaveSnapshot?.round?.votedCount).toBe(1);
+  });
+
+  it("rejects voting for your own definition", async () => {
+    const { manager, roomCode, hostSession, aliceSession, bobSession } = await createStartedRoom();
+
+    await manager.submitDefinition(roomCode, hostSession, "Definition host");
+    await manager.submitDefinition(roomCode, aliceSession, "Definition alice");
+    const votingSnapshot = await manager.submitDefinition(roomCode, bobSession, "Definition bob");
+    const roundNumber = votingSnapshot.round?.roundNumber;
+    expect(roundNumber).toBeTruthy();
+
+    const ownOptionId = getPlayerOptionId(roundNumber as number, hostSession.playerId);
+
+    expect(() => manager.vote(roomCode, hostSession, ownOptionId)).toThrow(
+      "Vous ne pouvez pas voter pour votre propre définition.",
+    );
+
+    const afterSnapshot = manager.getSnapshot(roomCode, hostSession.playerId);
+    expect(afterSnapshot.round?.votedCount).toBe(0);
+    expect(afterSnapshot.round?.votedOptionId).toBeNull();
   });
 });
 
@@ -192,7 +223,9 @@ describe("RoomManager final round flow", () => {
       );
 
       expect(votingSnapshot.phase).toBe("VOTING");
-      const optionId = votingSnapshot.round?.options[0]?.id as string;
+      const roundNumber = votingSnapshot.round?.roundNumber;
+      expect(roundNumber).toBeTruthy();
+      const optionId = getCorrectOptionId(roundNumber as number);
 
       manager.vote(roomCode, hostSession, optionId);
       const roundResultsSnapshot = manager.vote(roomCode, aliceSession, optionId);
